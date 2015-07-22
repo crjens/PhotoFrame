@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel='stylesheet' type='text/css' href='public/stylesheets/show.css' />
+    <link rel="stylesheet" href="public/stylesheets/jquery-ui.css" />
+    <link rel="stylesheet" href="public/stylesheets/jquery.rating.css" />
+    <script src="public/javascripts/jquery2.0.3.min.js"></script>
+    <script src="public/javascripts/jquery-ui.js"></script>
+    <script src="public/javascripts/imagesloaded.js"></script>
+    <script src="public/javascripts/jquery.rating.pack.js"></script>
+    <script src="/socket.io/lib/socket.io.js"></script>
+    <script src="public/javascripts/socket.js"></script>
+  </head>
+  <body>
+    <div id='root'  >
+        <div id="frame">
+            <iframe id="urlframe" src="http://24041.dyndns.org:4000/"></iframe>
+         </div>
+        <div id="image">
+            <img id='imgroot' />
+            <img src='public/images/Settings-48.png' class='settingsicon' alt='1'/>
+            <div class='metadata'></div>
+        </div>
+    </div>
+      <div id="settings-dialog" title="Settings" >
+       
+          <table>
+            <tr>
+                <td><label for="showmetadata">Show Metadata:</label></td>
+                <td><input name="showmetadata" type="checkbox" id="showmetadata" Value="showmetadata" /></td>
+            </tr>
+
+            <tr>
+                    <td><label for="title">Start Date:</label></td>
+                    <td><input type="text" id='startdate' /></td>
+            </tr>
+
+            <tr>
+                    <td><label for="title">End Date:</label></td>
+                    <td><input type="text" id='enddate' /></td>
+            </tr>
+        
+            <tr>
+                <td><label for="keywords">Keywords: </label></td>
+                <td><input id="keywords" /></td>
+            </tr>
+
+
+            <tr>
+                <td><label for="counter">Rating:</label></td>
+                <td>
+                    <input name="star1" type="radio" class="star" value="1"/> 
+                    <input name="star1" type="radio" class="star" value="2"/> 
+                    <input name="star1" type="radio" class="star" value="3"/> 
+                    <input name="star1" type="radio" class="star" value="4"/> 
+                    <input name="star1" type="radio" class="star" value="5"/>
+                </td>
+            </tr>
+
+            <tr>
+                <td><label for="delay">Delay (seconds):</label></td>
+                <td><input type="text" id='timeoutDelay' /></td>
+
+            </tr>
+              <tr>
+                  <td>Number:</td>
+                  <td id="matches"></td>
+              </tr>
+        
+            
+        </table>
+
+    </div>
+  </body>
+</html>
