@@ -159,7 +159,7 @@ app.post('/upload', function (req, res, next) {
 });
 
 app.get('/', function (req, res) {
-    res.sendfile('show.html');
+    res.sendFile('show.html');
 });
 
 /*
