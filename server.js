@@ -52,6 +52,32 @@ var   displayHistory = []
 scale.sync(options);
 
 
+var username = 'jensen', password = 'photos';
+
+var auth = function (req, res, next) {
+    function unauthorized(res) {
+        res.set('WWW-Authenticate', 'Basic realm=Authorization Required');
+        return res.sendStatus(401);
+    };
+
+    // bypass auth for local devices or empty username/password
+    if ((username == "" && password == "") || req.ip.indexOf("127.0.0.") == 0)
+        return next();
+
+    var user = basicAuth(req);
+
+    if (!user || !user.name || !user.pass) {
+        return unauthorized(res);
+    };
+
+    if (user.name === username && user.pass === password) {
+        return next();
+    } else {
+        console.warn('login failure: [' + user.name + '][' + user.pass + ']');
+        return unauthorized(res);
+    };
+};
+
 
   app.set('port', /*process.env.PORT ||*/ 3000);
 //  app.set('views', __dirname + '/views');
@@ -68,31 +94,7 @@ scale.sync(options);
   app.use(errorHandler);
 
 
-  var username = 'jensen', password = 'photos';
 
-  var auth = function (req, res, next) {
-      function unauthorized(res) {
-          res.set('WWW-Authenticate', 'Basic realm=Authorization Required');
-          return res.sendStatus(401);
-      };
-
-      // bypass auth for local devices or empty username/password
-      if ((username == "" && password == "") || req.ip.indexOf("127.0.0.") == 0)
-          return next();
-
-      var user = basicAuth(req);
-
-      if (!user || !user.name || !user.pass) {
-          return unauthorized(res);
-      };
-
-      if (user.name === username && user.pass === password) {
-          return next();
-      } else {
-          console.warn('login failure: [' + user.name + '][' + user.pass + ']');
-          return unauthorized(res);
-      };
-  };
 
 function logger(req, res, next) {
   console.log('%s %s', req.method, req.url);
