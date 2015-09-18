@@ -12,10 +12,24 @@ else
 	echo "installed node-server.sh"
 fi
 if [ -f ~/.bash_aliases ]; then
-	echo ".bash_aliases already installed"
-#	sudo unlink ~/app/.bash_aliases
-else
-	sudo mv ~/app/.bash_aliases ~
-	echo "installed .bash_aliases"
+	sudo unlink ~/app/.bash_aliases
 fi
+sudo mv ~/app/.bash_aliases ~
+echo "installed .bash_aliases"
+if [ -f /boot/config.txt ]; then
+	sudo unlink /boot/config.txt
+fi
+sudo mv ~/app/config.txt /boot/config.txt
+echo "installed /boot/config.txt"
+if [ -f /boot/xinitrc ]; then
+	sudo unlink /boot/xinitrc
+fi
+sudo mv ~/app/xinitrc /boot/xinitrc
+echo "installed /boot/xinitrc"
+if [ -f /etc/rc.local ]; then
+	sudo unlink /etc/rc.local
+fi
+sudo mv ~/app/rc.local /etc/rc.local
+echo "installed /etc/rc.local"
+
 echo "finished installing PhotoFrame" 
