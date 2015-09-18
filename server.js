@@ -84,7 +84,7 @@ var auth = function (req, res, next) {
 //  app.set('view engine', 'jade');
   app.use(logger);
   app.use(auth);
-  app.use(favicon(__dirname + '/public/images/favicon.png'));
+  app.use(favicon(__dirname + '/public/images/favicon.ico'));
   app.use(bodyParser({ keepExtensions: true, uploadDir: options.uploadTmpPath}));
   app.use(methodOverride('X-HTTP-Method-Override'));
   app.use(express.static(__dirname));
