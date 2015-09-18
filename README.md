@@ -16,9 +16,10 @@ Install Instructions
 		1.	sudo ln -s /home/pi/node-v0.10.28-linux-arm-pi/bin/node /usr/bin/node
 		2.	sudo ln -s /home/pi/node-v0.10.28-linux-arm-pi/bin/npm /usr/bin/npm
 	4. (both node -v and npm -v should now show current version)
-5. Install GraphicsMagick 
+5. Install the following: 
     1. sudo apt-get update
     2. sudo apt-get install graphicsmagick
+    3. sudo apt-get install chromium-browser
 6. Clone PhotoFrame into app directory
 	1. git clone https://github.com/crjens/PhotoFrame.git app
 7. cd into the 'app' directory and type 'npm install'
