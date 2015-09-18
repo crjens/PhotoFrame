@@ -11,7 +11,9 @@ var express = require('express')
   , db = require('./routes/database')
   , fs = require('fs')
   , exec = require('child_process').exec
-  , path = require('path');
+  , path = require('path')
+  , favicon = require('serve-favicon')
+  , bodyParser = require('body-parser');
 
 var options = {
     ignorePaths: ["_gsdata_"], 
@@ -48,20 +50,20 @@ var   displayHistory = []
 scale.sync(options);
 
 
-app.configure(function(){
+
   app.set('port', /*process.env.PORT ||*/ 3000);
 //  app.set('views', __dirname + '/views');
 //  app.set('view engine', 'jade');
   app.use(logger);
   app.use(auth);
-  app.use(express.favicon(__dirname + '/favicon.ico'));
-  app.use(express.bodyParser({ keepExtensions: true, uploadDir: options.uploadTmpPath}));
-  app.use(express.methodOverride());
-  app.use(express['static'](__dirname));
+  app.use(favicon(__dirname + '/public/images/favicon.ico'));
+  app.use(bodyParser({ keepExtensions: true, uploadDir: options.uploadTmpPath}));
+  app.use(methodOverride('X-HTTP-Method-Override'));
+  app.use(express.static(__dirname));
   app.use(logErrors);
   app.use(clientErrorHandler);
   app.use(errorHandler);
-});
+
 
 
 var basicAuth = express.basicAuth(function(user, pass) {
