@@ -13,7 +13,9 @@ var express = require('express')
   , exec = require('child_process').exec
   , path = require('path')
   , favicon = require('serve-favicon')
-  , bodyParser = require('body-parser');
+  , bodyParser = require('body-parser')
+  , methodOverride = require('method-override')
+  , basicAuth = require('basic-auth');
 
 var options = {
     ignorePaths: ["_gsdata_"], 
@@ -56,27 +58,41 @@ scale.sync(options);
 //  app.set('view engine', 'jade');
   app.use(logger);
   app.use(auth);
-  app.use(favicon(__dirname + '/public/images/favicon.ico'));
+  app.use(favicon(__dirname + '/public/images/favicon.png'));
   app.use(bodyParser({ keepExtensions: true, uploadDir: options.uploadTmpPath}));
   app.use(methodOverride('X-HTTP-Method-Override'));
   app.use(express.static(__dirname));
+  
   app.use(logErrors);
   app.use(clientErrorHandler);
   app.use(errorHandler);
 
 
+  var username = 'jensen', password = 'photos';
 
-var basicAuth = express.basicAuth(function(user, pass) {
-    return user === 'jensen' && pass === 'photos';
-});
+  var auth = function (req, res, next) {
+      function unauthorized(res) {
+          res.set('WWW-Authenticate', 'Basic realm=Authorization Required');
+          return res.sendStatus(401);
+      };
 
-function auth(req, res, next) {
-    //console.log('host: ' + req.host);
-    if (req.host == 'localhost')
-        return next();
+      // bypass auth for local devices or empty username/password
+      if ((username == "" && password == "") || req.ip.indexOf("127.0.0.") == 0)
+          return next();
 
-    basicAuth(req, res, next);
-}
+      var user = basicAuth(req);
+
+      if (!user || !user.name || !user.pass) {
+          return unauthorized(res);
+      };
+
+      if (user.name === username && user.pass === password) {
+          return next();
+      } else {
+          console.warn('login failure: [' + user.name + '][' + user.pass + ']');
+          return unauthorized(res);
+      };
+  };
 
 function logger(req, res, next) {
   console.log('%s %s', req.method, req.url);
