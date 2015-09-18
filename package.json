@@ -15,7 +15,7 @@
         "gm": ">=1.13.1",
         "jade": ">=0.35.0",
         "socket.io": ">=0.9.16",
-        "node":  ">=0.2.2"
+        "sync":  ">=0.2.2"
     },
     "config":{
         "unsafe-perm":true
