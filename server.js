@@ -162,17 +162,27 @@ app.get('/', function (req, res) {
     res.sendFile('show.html');
 });
 
-/*
-app.get('/off', function (req, res) {
+
+app.post('/off', function (req, res) {
     exec("sudo /usr/bin/screen.sh off");
     res.send('off');
 });
 
-app.get('/on', function (req, res) {
+app.post('/on', function (req, res) {
     exec("sudo /usr/bin/screen.sh on");
     res.send('on');
 });
-*/
+
+app.get('/status', function (req, res) {
+    exec("sudo /usr/bin/screen.sh status", function (err, stdout, stderr) {
+        if(stdout.indexOf('TV is off') >= 0)
+            res.send({ status: 'OFF' });
+        else
+            res.send({ status: 'ON' });
+    });
+    
+});
+
 
 app.get('/keywords', function (req, res, next) {
     var term = req.query.term;

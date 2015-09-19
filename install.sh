@@ -11,6 +11,16 @@ else
 	cd ~/app
 	echo "installed node-server.sh"
 fi
+if [ -f /usr/bin/screen.sh ]; then
+	echo "screen.sh already installed"
+#	sudo unlink ~/app/screen.sh
+else
+	sudo mv ~/app/screen.sh /usr/bin/
+	cd /usr/bin
+	sudo chmod 755 screen.sh
+	cd ~/app
+	echo "installed screen.sh"
+fi
 if [ -f ~/.bash_aliases ]; then
 	sudo unlink ~/app/.bash_aliases
 fi
