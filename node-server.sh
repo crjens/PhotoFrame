@@ -10,27 +10,23 @@
 ### END INIT INFO
 
 # change this to wherever your node app lives #
-path_to_node_app=/home/pi/app/server.js
-APP_DIR=/home/pi/app
-SERVER_JS_FILE=/home/pi/app/server.js
-FOREVER=/usr/lib/node_modules/forever/bin/forever
-USER=pi
-OUT=/home/pi
-NODE=/usr/bin/node
+USER=rock64
+APP_DIR=/home/$USER/app
+SERVER_JS_FILE=$APP_DIR/server.js
+FOREVER=forever
+OUT=/home/$USER
 
 # Carry out specific functions when asked to by the system
 case "$1" in
   start)
     echo "* starting node-server * "
     echo "* starting node-server * [`date`]" >> /var/log/node-server.log
-    cd /home/pi/app
-#	sudo $NODE $SERVER_JS_FILE >> /dev/null 2>&1&
+    cd $APP_DIR
     sudo $FOREVER start --workingDir $APP_DIR -a -o /dev/null -e $OUT/nodejs.err.log --killSignal=SIGTERM $SERVER_JS_FILE
     ;;
   stop)
     echo "* stopping node-server * "
     echo "* stopping node-server * [`date`]" >> /var/log/node-server.log
-#	killall $NODE
     sudo $FOREVER stop --killSignal=SIGTERM $SERVER_JS_FILE 
     ;;
   *)

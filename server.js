@@ -19,11 +19,11 @@ var express = require('express')
 
 var options = {
     ignorePaths: ["_gsdata_"], 
-    srcPath: '/mnt/passport/Users/Craig/Pictures',
+    srcPath: '/mnt/nas',
     //srcPath: 'C:/Users/cjensen/Desktop/SrcImages',
     tgtPath: __dirname + '/photos',
-    tgtWidth: 1920,
-    tgtHeight: 1080,
+    tgtWidth: 3840,
+    tgtHeight: 2160,
     thumbPath: __dirname + '/thumbs',
     thumbWidth: 100,
     thumbHeight: 100,

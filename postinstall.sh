@@ -1,4 +1,5 @@
 #!/bin/bash
+
 npm list forever -g || sudo npm install -g forever
 if [ -f /etc/init.d/node-server.sh ]; then
 	echo "node-server.sh already installed"
@@ -36,10 +37,12 @@ if [ -f /boot/xinitrc ]; then
 fi
 sudo mv ~/app/xinitrc /boot/xinitrc
 echo "installed /boot/xinitrc"
+
 if [ -f /etc/rc.local ]; then
 	sudo unlink /etc/rc.local
 fi
 sudo mv ~/app/rc.local /etc/rc.local
+sudo chmod 755 /etc/rc.local
 echo "installed /etc/rc.local"
 
 echo "finished installing PhotoFrame" 

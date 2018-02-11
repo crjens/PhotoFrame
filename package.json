@@ -21,7 +21,7 @@
         "unsafe-perm":true
     },
     "scripts": {
-        "postinstall": "/bin/bash ./install.sh"
+         "postinstall": "/bin/bash ./postinstall.sh"
     },
-    "engines": { "node": ">=0.10.28" }   
+    "engines": { "node": ">=8.0.0" }   
 }
