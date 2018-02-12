@@ -9,18 +9,11 @@ Install Instructions
 3. run 'sudo raspi-config' 
 	1. set locale and timezone under internationalisation options
 	2. expand filesystem
-4. Install nodejs:
-	1.	wget http://nodejs.org/dist/v0.10.28/node-v0.10.28-linux-arm-pi.tar.gz
-	2.	tar -xvzf node-v0.10.28-linux-arm-pi.tar.gz
-	3.  create symbolic links to node and npm
-		1.	sudo ln -s /home/pi/node-v0.10.28-linux-arm-pi/bin/node /usr/bin/node
-		2.	sudo ln -s /home/pi/node-v0.10.28-linux-arm-pi/bin/npm /usr/bin/npm
-	4. (both node -v and npm -v should now show current version)
-5. Install the following: 
-    1. sudo apt-get update
-    2. sudo apt-get install graphicsmagick
-    3. sudo apt-get install chromium-browser
-6. Clone PhotoFrame into app directory
+4. map newtork drive containing photos to /mnt/nas
+	1. sudo mkdir /mnt/nas
+	2. update /etc/fstab and the following line
+		1. //192.168.0.146/photo /mnt/nas cifs user=<user>,pass=<password> 0 0 f
+4. Clone PhotoFrame into app directory
 	1. git clone https://github.com/crjens/PhotoFrame.git app
-7. cd into the 'app' directory and type 'npm install'
+5. cd into the 'app' directory and type 'bash install.sh'
 
