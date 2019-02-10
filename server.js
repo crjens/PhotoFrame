@@ -159,7 +159,7 @@ app.post('/upload', function (req, res, next) {
 });
 
 app.get('/', function (req, res) {
-    res.sendFile('show.html');
+    res.sendFile('show.html', { root: __dirname });
 });
 
 
@@ -405,19 +405,16 @@ server.listen(app.get('port'), function () {
 
 var count = 0;
 var pushImage = function (settings) {
-    if ((count++ % 30) == 0) {
-        // show power meter
-        showUrl("http://24041.dyndns.org:4000");
-    } else {
-        db.next(settings, function (err, data) {
-            if (err)
-                console.log(err);
-            else {
-                //console.log(data.file + "    " + options.tgtPath);
-                showImage(data);
-            }
-        });
-    }
+  
+    db.next(settings, function (err, data) {
+        if (err)
+            console.log(err);
+        else {
+            //console.log(data.file + "    " + options.tgtPath);
+            showImage(data);
+        }
+    });
+
 };
 
 
