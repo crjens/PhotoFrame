@@ -15,8 +15,7 @@ var express = require('express')
   , favicon = require('serve-favicon')
   , bodyParser = require('body-parser')
   , methodOverride = require('method-override')
-  , basicAuth = require('basic-auth')
-  , spawn = require('threads').spawn;;
+  , basicAuth = require('basic-auth');
 
 var options = {
     ignorePaths: ["_gsdata_"], 
@@ -32,7 +31,7 @@ var options = {
     delay: 1000 * 60 * 60 * 12, // run every 12 hours
     uploadTmpPath: __dirname + '/uploads_tmp',
     uploadPath: __dirname + '/photos/uploads',
-    threads: 4
+    job: null
 };
 
 // list of images displayed
@@ -48,38 +47,35 @@ var   displayHistory = []
         showMetadata: false
     };
 
-// kick off the scaler
-//scale.sync(options);
 
-const threads = [];
 
-if (options.threads > 1)
-{
-    console.log("spawning " + options.threads + " worker threads");
+const Pool = require('threads').Pool;
+const pool = new Pool();
 
-    for (i=0; i < options.threads; i++) {
-        console.log("thread " + i + " spawning");
-        threads.push(spawn(function(input, done) {
-            // Everything we do here will be run in parallel in another execution context.
-            // Remember that this function will be executed in the thread's context,
-            // so you cannot reference any value of the surrounding code.
-            console.log("thread " + i + " running");
-            scale.sync3(options)
-            done({ string : input.string, integer : parseInt(input.string) });
-        })
-        //.on('message', function(response) {
-        //    console.log('123 * 2 = ', response.integer * 2);
-        //    thread.kill();
-        //})
-        .on('error', function(error) {
-            console.error('Worker errored:', error);
-        })
-        .on('exit', function() {
-            console.log('Worker has been terminated.');
-        }))
+// Run inline code
+const jobC = pool.run(
+    function(file, done) {
+      var tgtFile = file.replace(options.srcPath, options.tgtPath);
+      scale.addFile(file, tgtFile, options, function() { done(file)} )
     }
-}
+  );
 
+  pool
+  .on('done', function(file) {
+    console.log('File done:', file);
+  })
+  .on('error', function(job, error) {
+    console.error('Job errored:', job);
+  })
+  .on('finished', function() {
+    console.log('Everything done, shutting down the thread pool.');
+    pool.killAll();
+  });
+
+
+// kick off the scaler
+options.job = jobC;
+scale.sync(options);
 
 var username = 'jensen', password = 'photos';
 

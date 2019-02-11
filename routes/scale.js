@@ -451,10 +451,10 @@ var generateThumbs = function(file, options, callback) {
         return callback(null);
     }
 
-    if (options.threads > 1)
+    if (options.job != null)
     {
-        filesToProcess.push(file);
-        callback(null);
+        options.job.send(file);
+        return callback(null);
     } else {
         var tgtFile = file.replace(options.srcPath, options.tgtPath);
         generateThumbs2(file, tgtFile, options, callback);
