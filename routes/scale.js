@@ -78,7 +78,7 @@ var filesToProcess = [];
 
 
 const Pool = require('threads').Pool;
-const pool = new Pool();
+const pool = new Pool(4);
 
 // Run inline code
 const jobC = pool.run(
