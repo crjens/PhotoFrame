@@ -453,7 +453,7 @@ var generateThumbs = function(file, options, callback) {
 
     if (options.job != null)
     {
-        options.job.send(file);
+        options.job.send(file, options);
         return callback(null);
     } else {
         var tgtFile = file.replace(options.srcPath, options.tgtPath);
