@@ -105,7 +105,7 @@ var processFile = function(file, srcFile, tgtFile, thumbFile, options, callback)
     sync(function() {
         try {
 
-            //console.log('processing: ' + file);            
+            console.log('processing: ' + file);            
 
             var ticket = ensureDirExists.future(null, path.dirname(tgtFile), 777 & (~process.umask()));
             var ticket2 = ensureDirExists.future(null, path.dirname(thumbFile), 777 & (~process.umask()));
