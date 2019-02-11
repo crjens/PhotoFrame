@@ -55,11 +55,10 @@ const pool = new Pool();
 // Run inline code
 const jobC = pool.run(
     function(obj, done) {
-        scale(obj.file, obj.tgtFile, options, done);
+        scale(obj.file, obj.tgtFile, obj.options, done);
     }, {
         // dependencies; resolved using node's require() or the web workers importScript()
-        scale : scale.addFile,
-        options: options
+        scale: './routes/scale'
       }
   );
 
