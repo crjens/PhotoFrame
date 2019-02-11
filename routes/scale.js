@@ -83,8 +83,8 @@ const pool = new Pool();
 // Run inline code
 const jobC = pool.run(
     function(obj, done) {
-        console.log(obj)
-        scale(obj.file, obj.tgtFile, obj.options, done);
+        //console.log(obj)
+        scale(obj.file, obj.tgtFile, obj.options, function() { done(obj.file)});
     }, {
         // dependencies; resolved using node's require() or the web workers importScript()
         scale: generateThumbs2
@@ -101,7 +101,7 @@ const jobC = pool.run(
     console.log("Job done: " + job)
   })
   .on('error', function(job, error) {
-    //console.error('Job errored:', job);
+    console.error('Job errored:', job);
     console.log(error);
   })
   .on('finished', function() {
@@ -535,7 +535,7 @@ var generateThumbs2 = function(file, tgtFile, options, callback) {
        // }
 
         if (tStat == null || sStat.result.mtime.getTime() != tStat.mtime.getTime()) {
-            console.log('scailing: ' + tgtFile)
+            //console.log('scailing: ' + tgtFile)
 var pre = new Date() - start;
 start = new Date();
 
@@ -567,7 +567,7 @@ data.Telemetry.SetDestFileTimestamp = new Date() - start;
 
 //console.log(data.Telemetry);
         } else { 
-           console.log('not processing: ' + tgtFile) 
+           //console.log('not processing: ' + tgtFile) 
         }
     } 
    } 
