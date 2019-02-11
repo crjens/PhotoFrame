@@ -462,7 +462,7 @@ var generateThumbs = function(file, options, callback) {
 }
 
 var generateThumbs2 = function(file, tgtFile, options, callback) {
-
+console.log("generateThumbs2: " + file)
   sync(function() {
     try {
     if (isImageFile(file)) {
