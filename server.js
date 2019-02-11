@@ -30,8 +30,7 @@ var options = {
     maxClip: 0.75,
     delay: 1000 * 60 * 60 * 12, // run every 12 hours
     uploadTmpPath: __dirname + '/uploads_tmp',
-    uploadPath: __dirname + '/photos/uploads',
-    job: null
+    uploadPath: __dirname + '/photos/uploads'
 };
 
 // list of images displayed
@@ -49,42 +48,9 @@ var   displayHistory = []
 
 
 
-const Pool = require('threads').Pool;
-const pool = new Pool();
-
-// Run inline code
-const jobC = pool.run(
-    function(obj, done) {
-        console.log(obj)
-        scale(obj.file, obj.tgtFile, options, done);
-    }, {
-        // dependencies; resolved using node's require() or the web workers importScript()
-        scale: './routes/scale',
-        options: options
-      }
-  );
-
-  jobC
-  .on('done', function(file) {
-    console.log("Finished: " + file)
-  });
-
-  pool
-  .on('done', function(job) {
-    console.log("Job done: " + job)
-  })
-  .on('error', function(job, error) {
-    //console.error('Job errored:', job);
-    console.log(error);
-  })
-  .on('finished', function() {
-    console.log('Everything done, shutting down the thread pool.');
-    pool.killAll();
-  });
 
 
 // kick off the scaler
-options.job = jobC;
 scale.sync(options);
 
 var username = 'jensen', password = 'photos';

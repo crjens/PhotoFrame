@@ -76,6 +76,42 @@ exports.addFile = function(srcFile, tgtFile, options, callback) {
 
 var filesToProcess = [];
 
+
+const Pool = require('threads').Pool;
+const pool = new Pool();
+
+// Run inline code
+const jobC = pool.run(
+    function(obj, done) {
+        console.log(obj)
+        scale(obj.file, obj.tgtFile, obj.options, done);
+    }, {
+        // dependencies; resolved using node's require() or the web workers importScript()
+        scale: generateThumbs2
+      }
+  );
+
+  jobC
+  .on('done', function(file) {
+    console.log("Finished: " + file)
+  });
+
+  pool
+  .on('done', function(job) {
+    console.log("Job done: " + job)
+  })
+  .on('error', function(job, error) {
+    //console.error('Job errored:', job);
+    console.log(error);
+  })
+  .on('finished', function() {
+    console.log('Everything done, shutting down the thread pool.');
+    pool.killAll();
+  });
+
+
+
+
 exports.sync3 = function(options) {
     
     var file = filesToProcess.shift();
@@ -455,7 +491,7 @@ var generateThumbs = function(file, options, callback) {
     {
         var tgtFile = file.replace(options.srcPath, options.tgtPath);
 
-        options.job.send( { file: file, tgtFile: tgtFile});
+        jobC.send( { file: file, tgtFile: tgtFile, options: options});
 
         return callback(null);
     } else {
