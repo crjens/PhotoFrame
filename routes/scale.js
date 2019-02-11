@@ -83,7 +83,6 @@ const pool = new Pool(4);
 // Run inline code
 const jobC = pool.run(
     function(obj, done) {
-        console.log(obj.file)
         scale(obj.file, obj.tgtFile, obj.options, function() { done(obj.file)});
     }, {
         // dependencies; resolved using node's require() or the web workers importScript()
@@ -501,7 +500,7 @@ var generateThumbs = function(file, options, callback) {
 }
 
 var generateThumbs2 = function(file, tgtFile, options, callback) {
-//console.log("generateThumbs2: " + file)
+console.log("generateThumbs2: " + file)
   sync(function() {
     try {
     if (isImageFile(file)) {
