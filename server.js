@@ -15,7 +15,8 @@ var express = require('express')
   , favicon = require('serve-favicon')
   , bodyParser = require('body-parser')
   , methodOverride = require('method-override')
-  , basicAuth = require('basic-auth');
+  , basicAuth = require('basic-auth')
+  , spawn = require('threads').spawn;;
 
 var options = {
     ignorePaths: ["_gsdata_"], 
@@ -30,7 +31,8 @@ var options = {
     maxClip: 0.75,
     delay: 1000 * 60 * 60 * 12, // run every 12 hours
     uploadTmpPath: __dirname + '/uploads_tmp',
-    uploadPath: __dirname + '/photos/uploads'
+    uploadPath: __dirname + '/photos/uploads',
+    threads: 4
 };
 
 // list of images displayed
@@ -46,10 +48,31 @@ var   displayHistory = []
         showMetadata: false
     };
 
-
-
 // kick off the scaler
 scale.sync(options);
+
+if (options.threads > 1)
+{
+    for (i=0; i< options.threads; i++) {
+        spawn(function(input, done) {
+            // Everything we do here will be run in parallel in another execution context.
+            // Remember that this function will be executed in the thread's context,
+            // so you cannot reference any value of the surrounding code.
+            scale.sync3(options)
+            //done({ string : input.string, integer : parseInt(input.string) });
+        })
+        //.on('message', function(response) {
+        //    console.log('123 * 2 = ', response.integer * 2);
+        //    thread.kill();
+        //})
+        .on('error', function(error) {
+            console.error('Worker errored:', error);
+        })
+        .on('exit', function() {
+            console.log('Worker has been terminated.');
+        });
+    }
+}
 
 
 var username = 'jensen', password = 'photos';
@@ -85,7 +108,8 @@ var auth = function (req, res, next) {
   app.use(logger);
   app.use(auth);
   app.use(favicon(__dirname + '/public/images/favicon.ico'));
-  app.use(bodyParser({ keepExtensions: true, uploadDir: options.uploadTmpPath}));
+  app.use(bodyParser.json({ keepExtensions: true, uploadDir: options.uploadTmpPath}));
+  app.use(bodyParser.urlencoded({ keepExtensions: true, uploadDir: options.uploadTmpPath}));
   app.use(methodOverride('X-HTTP-Method-Override'));
   app.use(express.static(__dirname));
   

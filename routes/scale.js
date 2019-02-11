@@ -9,7 +9,6 @@ var fs = require('fs')
     , sync = require('sync')
     , db = require('./database');
 
-
 db.initialize(function (err) { 
     if (err)
         console.log("Sql initializing database: " + err);
@@ -333,16 +332,7 @@ var SyncFiles = function(options, callback)
                 console.log("finished new files - cleaning up missing files...")
                 walk(options.tgtPath, options, callback, cleanThumbs);    
             }, generateThumbs);
-            
-            /*    
-            walk(options.tgtPath, options, function(err) {
-                if (err)
-                    console.log("cleanThumbs err: " + err);
-                console.log("finished cleanup - searching for new files...")
-                walk(options.srcPath, options, callback, generateThumbs);    
-            }, cleanThumbs);  
-            */
-                     
+                    
         } else {
             console.log('SrcPath is not accessible');
             //throw new Error('SrcPath is not accessible');
@@ -460,9 +450,15 @@ var generateThumbs = function(file, options, callback) {
         console.log('skipping: ' + file);
         return callback(null);
     }
- 
-     var tgtFile = file.replace(options.srcPath, options.tgtPath);
-    generateThumbs2(file, tgtFile, options, callback);
+
+    if (options.threads > 1)
+    {
+        filesToProcess.push(file);
+        callback(null);
+    } else {
+        var tgtFile = file.replace(options.srcPath, options.tgtPath);
+        generateThumbs2(file, tgtFile, options, callback);
+    }
 }
 
 var generateThumbs2 = function(file, tgtFile, options, callback) {
