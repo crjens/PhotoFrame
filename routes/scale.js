@@ -501,12 +501,12 @@ var generateThumbs = function(file, options, callback) {
 }
 
 var generateThumbs2 = function(file, tgtFile, options, callback) {
-console.log("generateThumbs2: " + file)
+//console.log("generateThumbs2: " + file)
   sync(function() {
     try {
     if (isImageFile(file)) {
         var start = new Date();
-        console.log('found: ' + file);            
+        //console.log('found: ' + file);            
         //var tgtFile = file.replace(options.srcPath, options.tgtPath);
         //console.log(tgtFile)
         var ticket = ensureDirExists.future(null, path.dirname(tgtFile), 0777 & (~process.umask()));
@@ -567,7 +567,7 @@ data.Telemetry.SetDestFileTimestamp = new Date() - start;
 
 //console.log(data.Telemetry);
         } else { 
-         //  console.log('not processing: ' + tgtFile) 
+           console.log('not processing: ' + tgtFile) 
         }
     } 
    } 
