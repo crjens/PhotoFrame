@@ -30,7 +30,8 @@ var options = {
     maxClip: 0.75,
     delay: 1000 * 60 * 60 * 12, // run every 12 hours
     uploadTmpPath: __dirname + '/uploads_tmp',
-    uploadPath: __dirname + '/photos/uploads'
+    uploadPath: __dirname + '/photos/uploads',
+    job: true
 };
 
 // list of images displayed
