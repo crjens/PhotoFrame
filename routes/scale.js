@@ -467,7 +467,7 @@ var generateThumbs2 = function(file, tgtFile, options, callback) {
     try {
     if (isImageFile(file)) {
         var start = new Date();
-        //console.log('found: ' + file);            
+        console.log('found: ' + file);            
         //var tgtFile = file.replace(options.srcPath, options.tgtPath);
         //console.log(tgtFile)
         var ticket = ensureDirExists.future(null, path.dirname(tgtFile), 0777 & (~process.umask()));
@@ -496,7 +496,7 @@ var generateThumbs2 = function(file, tgtFile, options, callback) {
        // }
 
         if (tStat == null || sStat.result.mtime.getTime() != tStat.mtime.getTime()) {
-            //console.log('scailing: ' + tgtFile)
+            console.log('scailing: ' + tgtFile)
 var pre = new Date() - start;
 start = new Date();
 
@@ -775,7 +775,7 @@ var walk = function(dir, options, done, callback) {
       file = dir + '/' + file;
       fs.stat(file, function(err, stat) {
         if (stat && stat.isDirectory()) {
-            console.log('walking: ' + file);
+           // console.log('walking: ' + file);
           walk(file, options, function (err) {
              next();
           }, callback);
