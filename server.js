@@ -54,10 +54,10 @@ const pool = new Pool();
 
 // Run inline code
 const jobC = pool.run(
-    function(file, options, done) {
+    function(file, options, scaleFile, done) {
         console.log("Starting: " + file)
         var tgtFile = file.replace(options.srcPath, options.tgtPath);
-        scale.addFile(file, tgtFile, options, function() { 
+        scaleFile(file, tgtFile, options, function() { 
             done(file)
         } )
     }
