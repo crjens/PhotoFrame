@@ -500,7 +500,7 @@ var generateThumbs = function(file, options, callback) {
 }
 
 var generateThumbs2 = function(file, tgtFile, options, callback) {
-console.log("generateThumbs2: " + file)
+
   sync(function() {
     try {
     if (isImageFile(file)) {
@@ -534,7 +534,7 @@ console.log("generateThumbs2: " + file)
        // }
 
         if (tStat == null || sStat.result.mtime.getTime() != tStat.mtime.getTime()) {
-            //console.log('scailing: ' + tgtFile)
+            console.log('starting: ' + tgtFile)
 var pre = new Date() - start;
 start = new Date();
 
