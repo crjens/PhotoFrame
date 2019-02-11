@@ -68,7 +68,8 @@ const jobC = pool.run(
     console.log("Finished: " + job)
   })
   .on('error', function(job, error) {
-    console.error('Job errored:', job);
+    //console.error('Job errored:', job);
+    console.log(error);
   })
   .on('finished', function() {
     console.log('Everything done, shutting down the thread pool.');
