@@ -55,10 +55,11 @@ const pool = new Pool();
 // Run inline code
 const jobC = pool.run(
     function(obj, done) {
-        scaleImage(obj.file, obj.tgtFile, options, done);
+        console.log(obj)
+        scale(obj.file, obj.tgtFile, options, done);
     }, {
         // dependencies; resolved using node's require() or the web workers importScript()
-        scaleImage: './routes/scale',
+        scale: './routes/scale',
         options: options
       }
   );
