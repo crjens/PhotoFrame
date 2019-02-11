@@ -53,21 +53,19 @@ const Pool = require('threads').Pool;
 const pool = new Pool();
 
 // Run inline code
-var jobCount = 0;
 const jobC = pool.run(
     function(file, done) {
-        var job = jobCount++;
-        console.log("Starting(" + job + "): " + file)
-        //var tgtFile = file.replace(options.srcPath, options.tgtPath);
-        //scale.addFile(file, tgtFile, options, function() { 
-            done(job, file)
-        //    } )
+        console.log("Starting: " + file)
+        var tgtFile = file.replace(options.srcPath, options.tgtPath);
+        scale.addFile(file, tgtFile, options, function() { 
+            done(file)
+        } )
     }
   );
 
   pool
-  .on('done', function(job, file) {
-    console.log("Finished(" + job + ")")
+  .on('done', function(file) {
+    console.log("Finished: " + job)
   })
   .on('error', function(job, error) {
     console.error('Job errored:', job);
