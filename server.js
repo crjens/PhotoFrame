@@ -55,17 +55,22 @@ const pool = new Pool();
 // Run inline code
 const jobC = pool.run(
     function(obj, done) {
-        scale(obj.file, obj.tgtFile, options, done);
+        scaleImage(obj.file, obj.tgtFile, options, done);
     }, {
         // dependencies; resolved using node's require() or the web workers importScript()
-        scale: './routes/scale',
+        scaleImage: './routes/scale',
         options: options
       }
   );
 
-  pool
+  jobC
   .on('done', function(file) {
-    console.log("Finished: " + job)
+    console.log("Finished: " + file)
+  });
+
+  pool
+  .on('done', function(job) {
+    console.log("Job done: " + job)
   })
   .on('error', function(job, error) {
     //console.error('Job errored:', job);
