@@ -83,6 +83,7 @@ const pool = new Pool(4);
 // Run inline code
 const jobC = pool.run(
     function(obj, done) {
+        console.log('here')
         scale(obj.file, obj.tgtFile, obj.options, function() { done(obj.file)});
     }, {
         // dependencies; resolved using node's require() or the web workers importScript()
@@ -100,7 +101,7 @@ const jobC = pool.run(
     console.log("Job done: " + job)
   })
   .on('error', function(job, error) {
-    console.error('Job errored:', job);
+   // console.error('Job errored:', job);
     console.log(error);
   })
   .on('finished', function() {
