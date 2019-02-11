@@ -58,10 +58,10 @@ const jobC = pool.run(
     function(file, done) {
         var job = jobCount++;
         console.log("Starting(" + job + "): " + file)
-        var tgtFile = file.replace(options.srcPath, options.tgtPath);
-        scale.addFile(file, tgtFile, options, function() { 
+        //var tgtFile = file.replace(options.srcPath, options.tgtPath);
+        //scale.addFile(file, tgtFile, options, function() { 
             done(job, file)
-            } )
+        //    } )
     }
   );
 
