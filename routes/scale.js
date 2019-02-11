@@ -489,7 +489,7 @@ var generateThumbs = function(file, options, callback) {
     if (options.job != null)
     {
         var tgtFile = file.replace(options.srcPath, options.tgtPath);
-
+console.log('queued: ' + file)
         jobC.send( { file: file, tgtFile: tgtFile, options: options});
 
         return callback(null);
