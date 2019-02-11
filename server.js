@@ -54,13 +54,8 @@ const pool = new Pool();
 
 // Run inline code
 const jobC = pool.run(
-    function(obj, done) {
-        console.log("options: " + obj.options)
-        var tgtFile = obj.file.replace(obj.options.srcPath, obj.options.tgtPath);
-        console.log("Starting: " + obj.file + ", " + tgtFile)
-        obj.scale(obj.file, tgtFile, obj.options, function() { 
-            done(obj.file)
-        } )
+    function(scale, done) {
+        scale(done);
     }
   );
 
