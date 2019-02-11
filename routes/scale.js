@@ -83,7 +83,7 @@ const pool = new Pool(4);
 // Run inline code
 const jobC = pool.run(
     function(obj, done) {
-        //console.log(obj)
+        console.log(obj.file)
         scale(obj.file, obj.tgtFile, obj.options, function() { done(obj.file)});
     }, {
         // dependencies; resolved using node's require() or the web workers importScript()
