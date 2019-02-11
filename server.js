@@ -57,6 +57,7 @@ const jobC = pool.run(
     function(file, options, scaleFile, done) {
         console.log("Starting: " + file)
         var tgtFile = file.replace(options.srcPath, options.tgtPath);
+        console.log("Starting: " + file + ", " + tgtFile)
         scaleFile(file, tgtFile, options, function() { 
             done(file)
         } )
