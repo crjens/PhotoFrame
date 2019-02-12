@@ -4,21 +4,22 @@
  */
 
 var express = require('express')
-  , app = express()
-  , scale = require('./routes/scale')
-  , server = require('http').createServer(app)
-  , io = require('socket.io').listen(server)
-  , db = require('./routes/database')
-  , fs = require('fs')
-  , exec = require('child_process').exec
-  , path = require('path')
-  , favicon = require('serve-favicon')
-  , bodyParser = require('body-parser')
-  , methodOverride = require('method-override')
-  , basicAuth = require('basic-auth');
+    , app = express()
+    , scale = require('./routes/scale')
+    , server = require('http').createServer(app)
+    , io = require('socket.io').listen(server)
+    , db = require('./routes/database')
+    , fs = require('fs')
+    , exec = require('child_process').exec
+    , path = require('path')
+    , favicon = require('serve-favicon')
+    , bodyParser = require('body-parser')
+    , methodOverride = require('method-override')
+    , basicAuth = require('basic-auth')
+    , os = require('os');
 
 var options = {
-    ignorePaths: ["_gsdata_"], 
+    ignorePaths: ["_gsdata_"],
     srcPath: '/mnt/nas',
     //srcPath: 'C:/Users/cjensen/Desktop/SrcImages',
     tgtPath: __dirname + '/photos',
@@ -30,12 +31,11 @@ var options = {
     maxClip: 0.75,
     delay: 1000 * 60 * 60 * 12, // run every 12 hours
     uploadTmpPath: __dirname + '/uploads_tmp',
-    uploadPath: __dirname + '/photos/uploads',
-    job: true
+    uploadPath: __dirname + '/photos/uploads'
 };
 
 // list of images displayed
-var   displayHistory = []
+var displayHistory = []
     , temporarilyPaused = false
     , intervalId = null
     , _settings = {
@@ -47,12 +47,74 @@ var   displayHistory = []
         showMetadata: false
     };
 
+var total = 0;
+var scaled = 0;
+var complete = 0;
+var failed = 0;
+var skipped = 0;
+var scalers = [];
+var fork = require('child_process').fork;
+//for (i = 0; i < os.cpus().length; i++) {
+for (i = 0; i < 2; i++) {
+    var scaler = fork(__dirname + '/routes/scaler.js');
+    console.log("started scaler process: " + scaler.pid)
+    scaler.send({ Action: "Start", Options: options });
 
+    scaler.on('message', function (data) {
+        try {
+            if (data.Error) {
+                failed++;
+                console.error(data.Error);
+            }
+            else if (data.Data != null) {
+                var result = data.Data;
+                scaled++;
+                db.InsertFileInfo(result.Data, result.TgtFile, function (err) {
+                    if (err) {
+                        failed++;
+                        console.error(err);
+                    }
+                    else {
+                        complete++;
+                        console.log(new Date().toISOString() + " Pid: " + data.Pid + " " + data.File + " (complete: " + complete + ", scaled: " + scaled + ", total: " + total + ", failed: " + failed + ", skipped: "+skipped+")");
+                    }
 
+                });
+            } else {
+                skipped++;
+                //console.log(new Date().toISOString() + " skipping: " + data.File)
+            }
+        } catch (err) {
+            failed++;
+            console.log(err + " ");
+        }
+    });
 
+    scalers.push(scaler);
+}
 
-// kick off the scaler
-scale.sync(options);
+var filesToProcess = [];
+
+var Enum = function (path) {
+    scale.Enumerate(path, function (err, files) {
+        if (err) {
+            console.log(err);
+        }
+        else {
+            files.forEach(function (file) {
+                var index = (total++) % scalers.length;
+                scalers[index].send({ Action: "Push", File: file });
+            });
+
+            console.log("found: " + files.length + " files in " + path)
+        }
+
+        setTimeout(Enum, options.delay, path);
+    });
+};
+
+Enum(options.srcPath);
+
 
 var username = 'jensen', password = 'photos';
 
@@ -81,49 +143,49 @@ var auth = function (req, res, next) {
 };
 
 
-  app.set('port', /*process.env.PORT ||*/ 3000);
+app.set('port', /*process.env.PORT ||*/ 3000);
 //  app.set('views', __dirname + '/views');
 //  app.set('view engine', 'jade');
-  app.use(logger);
-  app.use(auth);
-  app.use(favicon(__dirname + '/public/images/favicon.ico'));
-  app.use(bodyParser.json({ keepExtensions: true, uploadDir: options.uploadTmpPath}));
-  app.use(bodyParser.urlencoded({ keepExtensions: true, uploadDir: options.uploadTmpPath}));
-  app.use(methodOverride('X-HTTP-Method-Override'));
-  app.use(express.static(__dirname));
-  
-  app.use(logErrors);
-  app.use(clientErrorHandler);
-  app.use(errorHandler);
+app.use(logger);
+app.use(auth);
+app.use(favicon(__dirname + '/public/images/favicon.ico'));
+app.use(bodyParser.json({ keepExtensions: true, uploadDir: options.uploadTmpPath }));
+//app.use(bodyParser.urlencoded({ keepExtensions: true, uploadDir: options.uploadTmpPath }));
+app.use(methodOverride('X-HTTP-Method-Override'));
+app.use(express.static(__dirname));
+
+app.use(logErrors);
+app.use(clientErrorHandler);
+app.use(errorHandler);
 
 
 
 
 function logger(req, res, next) {
-  console.log('%s %s', req.method, req.url);
-  //console.log(req.headers.authorization);
-  //console.log(req.headers);
-  
-  next();
+    console.log('%s %s', req.method, req.url);
+    //console.log(req.headers.authorization);
+    //console.log(req.headers);
+
+    next();
 }
 
 function logErrors(err, req, res, next) {
-  console.log(err);
-  console.error(err.stack);
-  next(err);
+    console.log(err);
+    console.error(err.stack);
+    next(err);
 }
 
 function clientErrorHandler(err, req, res, next) {
-  if (req.xhr) {
-    res.send(500, { error: 'Server error' });
-  } else {
-    next(err);
-  }
+    if (req.xhr) {
+        res.send(500, { error: 'Server error' });
+    } else {
+        next(err);
+    }
 }
 
 function errorHandler(err, req, res, next) {
-  res.status(500);
-  res.render('error', { error: err });
+    res.status(500);
+    res.render('error', { error: err });
 }
 
 
@@ -178,12 +240,12 @@ app.post('/on', function (req, res) {
 
 app.get('/status', function (req, res) {
     exec("sudo /usr/bin/screen.sh status", function (err, stdout, stderr) {
-        if(stdout.indexOf('TV is off') >= 0)
+        if (stdout.indexOf('TV is off') >= 0)
             res.send({ status: 'OFF' });
         else
             res.send({ status: 'ON' });
     });
-    
+
 });
 
 
@@ -201,7 +263,7 @@ app.get('/keywords', function (req, res, next) {
 });
 
 app.get('/checksettings', function (req, res, next) {
-    
+
     var settings = req.query.settings;
     db.checksettings(settings, function (err, data) {
         if (err) {
@@ -310,17 +372,17 @@ app.post('/thumbs', function (req, res, next) {
         if (err)
             next(err);
         else {
-           // if (pause) {
-                changeState(false, 300);
-                temporarilyPaused = true;
-           // }
+            // if (pause) {
+            changeState(false, 300);
+            temporarilyPaused = true;
+            // }
 
             showImage(data);
             res.send('success')
         }
     })
 
-    
+
 });
 
 
@@ -331,8 +393,8 @@ app.post('/disable', function (req, res, next) {
     db.disable(file, function (err, data) {
         if (err) {
             next(err);
-         } else {
-           res.send('success')
+        } else {
+            res.send('success')
         }
     })
 });
@@ -354,12 +416,12 @@ var showImage = function (data) {
         displayHistory.pop();  // remove from end
     displayHistory.unshift(data.file); // add to beginning
 
-   // data.file = encodeUri(data.file);
+    // data.file = encodeUri(data.file);
     io.sockets.emit('show_image', data);
 }
 
 var showUrl = function (url) {
-    
+
     if (temporarilyPaused) {
         temporarilyPaused = false;
         changeState(true, _settings.timeoutDelay);
@@ -369,8 +431,8 @@ var showUrl = function (url) {
     data.url = url
     data.timestamp = new Date();  // when it was served to clients
 
-   
-   // data.file = encodeUri(data.file);
+
+    // data.file = encodeUri(data.file);
     io.sockets.emit('show_url', data);
 }
 
@@ -408,7 +470,7 @@ server.listen(app.get('port'), function () {
 
 var count = 0;
 var pushImage = function (settings) {
-  
+
     db.next(settings, function (err, data) {
         if (err)
             console.log(err);
@@ -421,7 +483,7 @@ var pushImage = function (settings) {
 };
 
 
-io.set('log level', 2);
+//io.set('log level', 2);
 
 io.sockets.on('connection', function (socket) {
     console.log('************* connected: ' + socket.id);

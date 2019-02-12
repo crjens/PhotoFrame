@@ -6,12 +6,23 @@ var fs = require('fs')
     , path = require('path')
     , sqlite3 = require('sqlite3');
 
-
 var db = new sqlite3.Database('thumbs.db');
 
+db.exec("PRAGMA journal_mode = MEMORY;");
+//var db = new sqlite3.Database(':memory:');
 
-exports.initialize = function(callback) {
-    
+/*
+db.on('trace', function(sql) {
+    console.log("trace: " + sql);
+ });
+
+ db.on('profile', function(sql, ts) {
+    console.log("Profile: " + sql + " ts: " + ts);
+ });*/
+String.prototype.escape = function (str) { return (this.replace(/'/g, "''")) }
+
+exports.initialize = function (callback) {
+
     var sql = "create table if not exists Thumbnails (id INTEGER primary key, SourcePath TEXT unique, DestPath TEXT unique, DestWidth int, DestHeight int, Rating int, Timestamp TEXT, Model TEXT, FocalLength TEXT, ExposureTime TEXT, Aperture Real, ISO int, LensID TEXT, Make TEXT, Enabled int default 1, Modified int default 0); ";
     sql += "create table if not exists Keywords (id INTEGER primary key, thumb_id int not null, keyword TEXT, constraint uq_keyword unique(thumb_id, keyword), Foreign key (thumb_id) references Thumbnails(id)); ";
     sql += "create index if not exists Thumbnails_Rating_idx on Thumbnails(Rating); ";
@@ -33,6 +44,8 @@ exports.initialize = function(callback) {
     db.exec(sql, callback);
 }
 
+exports.initialize(function (err) { })
+
 //select id from Thumbnails where id in (select thumb_id from Keywords where keyword in ('Carter')) limit 1 offset abs(Random()) % (select count(*) from Keywords where keyword in ('Carter'));
 //select id from Thumbnails where id in (select thumb_id from Keywords where keyword in ('Carter')) order by Random() limit 1;
 
@@ -49,13 +62,13 @@ String.prototype.buildWhere = function (str) {
     return val;
 }
 
-var getWhere = function(settings) {
+var getWhere = function (settings) {
     var where = '';
     where = where.buildWhere('Enabled=1');
     if (settings.minDate)
-        where = where.buildWhere("Timestamp >= '" + new Date(settings.minDate).toISOString() +"'");
+        where = where.buildWhere("Timestamp >= '" + new Date(settings.minDate).toISOString() + "'");
     if (settings.maxDate)
-        where = where.buildWhere("Timestamp <= '" + new Date(settings.maxDate).toISOString() +"'");
+        where = where.buildWhere("Timestamp <= '" + new Date(settings.maxDate).toISOString() + "'");
     if (settings.rating)
         where = where.buildWhere('Rating >= ' + settings.rating);
     if (settings.keywords) {
@@ -166,8 +179,8 @@ exports.update = function (file, enabled, keywords, rating, callback) {
 
 exports.load = function (file, callback) {
 
-   var stmt = "select *, (select group_concat(keyword, ',') from Keywords where thumb_id=t.rowid) as Keywords from Thumbnails t where DestPath like '%" + file.escape() + "';";
-   LoadFile(stmt, callback);
+    var stmt = "select *, (select group_concat(keyword, ',') from Keywords where thumb_id=t.rowid) as Keywords from Thumbnails t where DestPath like '%" + file.escape() + "';";
+    LoadFile(stmt, callback);
 }
 
 
@@ -178,12 +191,13 @@ var LoadFile = function (stmt, callback) {
             console.log("select err4: " + err);
             callback(err);
         } else if (results.length == 1) {
-            
+
             var keywords = [];
             if (results[0].Keywords)
                 keywords = results[0].Keywords.split(',');
 
-            callback(null, { file: results[0].DestPath,
+            callback(null, {
+                file: results[0].DestPath,
                 width: results[0].DestWidth,
                 height: results[0].DestHeight,
                 keywords: keywords,
@@ -196,7 +210,7 @@ var LoadFile = function (stmt, callback) {
         }
     });
 }
- 
+
 
 
 exports.daterange = function (callback) {
@@ -252,11 +266,12 @@ exports.getSourcePathFromTargetPath = function (tgtPath, callback) {
     });
 }
 
-exports.deleteFileInfo = function(tgtPath, callback){
-
+exports.deleteFileInfo = function (tgtPath, callback) {
+    //console.log(tgtPath)
+    //console.log(tgtPath.escape())
     // get id of row to be deleted
     var sql1 = "Select id from Thumbnails where DestPath='" + tgtPath.escape() + "';";
-    db.all(sql1, function(err, results){
+    db.all(sql1, function (err, results) {
         if (err) {
             console.log("Sql select id error: " + err);
             callback(err);
@@ -264,15 +279,15 @@ exports.deleteFileInfo = function(tgtPath, callback){
             var deletedId = results[0].id;
 
             var sql2 = "Select max(id) as maxId from Thumbnails;";
-            db.all(sql2, function(err, results){
+            db.all(sql2, function (err, results) {
                 if (err) {
                     console.log("Sql select maxId error: " + err);
                     callback(err);
                 } else {
-                    var maxId =  results[0].maxId;
-             
+                    var maxId = results[0].maxId;
+
                     //console.log("Sql deletedId: " + deletedId + " maxId: " + maxId);  
-                    
+
                     // delete keywords for deleted file
                     var sql = "Delete from Thumbnails where id=" + deletedId + ";";
                     sql += " Delete from Keywords where thumb_id=" + deletedId + ";";
@@ -283,21 +298,21 @@ exports.deleteFileInfo = function(tgtPath, callback){
                         sql += " Update Keywords set thumb_id=" + deletedId + " where thumb_id=" + maxId + ";";
                     }
 
-                    db.exec(sql, function(err){
-                       if (err)
-                            console.log("Sql error executing statement: "+sql + " err: " + err);
-                       else
-                            console.log("db.deleteFileInfo(" + tgtPath + ") deleted id: " + deletedId + " and replaced with: " + maxId) ;    
-                       callback(err); 
+                    db.exec(sql, function (err) {
+                        if (err)
+                            console.log("Sql error executing statement: " + sql + " err: " + err);
+                        else
+                            console.log("db.deleteFileInfo(" + tgtPath + ") deleted id: " + deletedId + " and replaced with: " + maxId);
+                        callback(err);
                     });
                 }
             });
-         } else {
+        } else {
             // console.log(results);
             // console.log("Sql not deleted because it doesn't not exist: " + tgtPath)
-             callback(null); // tgtPath does not exist
-         }
-     });
+            callback(null); // tgtPath does not exist
+        }
+    });
 }
 
 exports.getNext = function (callback) {
@@ -322,7 +337,6 @@ exports.updateDestSize = function (file, data, callback) {
 }
 
 exports.InsertFileInfo = function (data, DestPath, callback) {
-    //console.log(data);
     // first delete existing row
     exports.deleteFileInfo(DestPath, function (err) {
         if (err) {
@@ -330,47 +344,39 @@ exports.InsertFileInfo = function (data, DestPath, callback) {
             callback(err);
         } else {
             // insert new file
-            var statement = db.prepare("Insert into Thumbnails Values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
-            statement.run(null, data.SourceFile, DestPath, data.DestWidth, data.DestHeight, data.Rating, data.DateTaken.toISOString(), data.Model, 
-                data.FocalLength, data.ExposureTime, data.Aperture, data.ISO, data.LensID, data.Make, 1, 0, function (err) {
+            var sql = "Insert into Thumbnails Values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+            var args = [null, data.SourceFile, DestPath, data.DestWidth, data.DestHeight, data.Rating, new Date(data.DateTaken).toISOString(), data.Model,
+                data.FocalLength, data.ExposureTime, data.Aperture, data.ISO, data.LensID, data.Make, 1, 0];
+
+            db.run(sql, args, function (err) {
+
                 if (err) {
                     console.log("insert thumbnail err: " + err);
                     callback(err);
                 } else {
                     var id = this.lastID;
-
                     InsertKeywords(id, data.Tags, callback);
                 }
             });
-            statement.finalize();
         }
     })
 }
 
+var InsertKeywords = function (id, keywords, callback) {
 
-var InsertKeywords = function(id, keywords, callback) {
-    var sql = "", cnt = 0;
-    for (var i = 0; i < keywords.length; i++) {
-        var word = keywords[i].trim();
-        if (word.length > 0) {
-            sql += "Insert into Keywords Values(null," + id + ",'" + word.escape() + "');"
-            cnt++;
+    db.serialize(() => {
+        db.run("begin transaction")
+        var sql = "Insert into Keywords Values(?,?,?);"
+        const pstmt = db.prepare(sql)
+        for (var i = 0; i < keywords.length; i++) {
+            var word = keywords[i].trim();
+            if (word.length > 0) {
+                pstmt.run(null, id, word)
+            }
         }
-    }
 
-    if (cnt > 0) {
-        db.exec(sql, function (err) {
-            if (err)
-                console.log("Sql error executing statement: " + sql + " err: " + err);
-            // else
-            //   console.log("Sql successfully inserted " + cnt + " keywords");    
+        db.run("commit")
+    })
 
-            callback(err);
-        });
-    } else {
-        //console.log('Sql no keywords to insert');
-        callback(null);
-    }
+    callback(null);
 }
- 
-
