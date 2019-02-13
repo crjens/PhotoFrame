@@ -6,7 +6,7 @@ if ! [type -P nodejs]; then
 fi
 
 sudo apt-get update
-sudo apt-get install -y exiftool cifs-utils nodejs chromium-browser graphicsmagick
+sudo apt-get install -y exiftool cifs-utils nodejs chromium graphicsmagick python
 
 npm install
 
