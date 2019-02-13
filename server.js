@@ -54,8 +54,8 @@ var failed = 0;
 var skipped = 0;
 var scalers = [];
 var fork = require('child_process').fork;
-//for (i = 0; i < os.cpus().length; i++) {
-for (i = 0; i < 2; i++) {
+for (i = 0; i < os.cpus().length; i++) {
+//for (i = 0; i < 2; i++) {
     var scaler = fork(__dirname + '/routes/scaler.js');
     console.log("started scaler process: " + scaler.pid)
     scaler.send({ Action: "Start", Options: options });
