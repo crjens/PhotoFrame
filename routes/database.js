@@ -8,7 +8,7 @@ var fs = require('fs')
 
 var db = new sqlite3.Database('thumbs.db');
 
-db.exec("PRAGMA journal_mode = MEMORY;");
+//db.exec("PRAGMA journal_mode = MEMORY;");
 //var db = new sqlite3.Database(':memory:');
 
 /*
