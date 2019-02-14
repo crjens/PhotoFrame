@@ -185,10 +185,6 @@ var ReadFileInfo = function (file, callback) {
         }, callback)
     */
 
-
-    //console.log("exiftool -FileModifyDate -Title -Rating -Common -Lens -Subject -XPKeywords -Keywords -ImageHeight -ImageWidth -j \"" + file + "\"")
-    //var res = exec.sync(null, "exiftool -FileModifyDate -Title -Rating -Common -LensID -Subject -XPKeywords -Keywords -ImageHeight -ImageWidth -Make -CameraModel -ExposureTime -FocalLength -ISOSpeed -FStop -j \"" + file + "\"");
-    //fs.readFile(file, ['-imageWidth', '-imageHeight'], function (err, data) {
     fs.readFile(file, function (err, data) {
         if (err)
             callback(err);
@@ -206,7 +202,6 @@ var ReadFileInfo = function (file, callback) {
                     if (json.DateTaken == null) {
                         json.DateTaken = parseDate(json.FileModifyDate, file);
                     }
-console.log(json)
                     callback(null, json);
                 }
             });
