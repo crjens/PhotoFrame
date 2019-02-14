@@ -7,7 +7,8 @@ var fs = require('fs')
     , exec = require('child_process').exec
     , sync = require('sync')
     , db = require('./database')
-    , gm = require('gm');
+    , gm = require('gm')
+    , exif = require('exiftool');
 /*
 db.initialize(function (err) {
     if (err)
@@ -25,8 +26,6 @@ Array.prototype.unique = function () {
 }
 
 var filesToProcess = [];
-
-
 
 var isImageFile = function (path) {
     var lPath = path.toLowerCase();
@@ -167,23 +166,53 @@ var parseDate = function (date, file) {
 }
 
 var ReadFileInfo = function (file, callback) {
+    /*
+        sync(function () {
+    
+            //console.log("exiftool -FileModifyDate -Title -Rating -Common -Lens -Subject -XPKeywords -Keywords -ImageHeight -ImageWidth -j \"" + file + "\"")
+            var res = exec.sync(null, "exiftool -FileModifyDate -Title -Rating -Common -LensID -Subject -XPKeywords -Keywords -ImageHeight -ImageWidth -Make -CameraModel -ExposureTime -FocalLength -ISOSpeed -FStop -j \"" + file + "\"");
+            //console.log(res)
+            var json = eval(res)[0];
+            json.Tags = parseKeywords(json.Keywords).concat(parseKeywords(json.XPKeywords)).concat(parseKeywords(json.Subject)).unique();
+            //console.log('parsed')
+            // parse dateTaken
+            json.DateTaken = parseDate(json.DateTimeOriginal, file);
+            if (json.DateTaken == null) {
+                json.DateTaken = parseDate(json.FileModifyDate, file);
+            }
+    
+            return json;
+        }, callback)
+    */
 
-    sync(function () {
 
-        //console.log("exiftool -FileModifyDate -Title -Rating -Common -Lens -Subject -XPKeywords -Keywords -ImageHeight -ImageWidth -j \"" + file + "\"")
-        var res = exec.sync(null, "exiftool -FileModifyDate -Title -Rating -Common -LensID -Subject -XPKeywords -Keywords -ImageHeight -ImageWidth -Make -CameraModel -ExposureTime -FocalLength -ISOSpeed -FStop -j \"" + file + "\"");
-        //console.log(res)
-        var json = eval(res)[0];
-        json.Tags = parseKeywords(json.Keywords).concat(parseKeywords(json.XPKeywords)).concat(parseKeywords(json.Subject)).unique();
-        //console.log('parsed')
-        // parse dateTaken
-        json.DateTaken = parseDate(json.DateTimeOriginal, file);
-        if (json.DateTaken == null) {
-            json.DateTaken = parseDate(json.FileModifyDate, file);
+    //console.log("exiftool -FileModifyDate -Title -Rating -Common -Lens -Subject -XPKeywords -Keywords -ImageHeight -ImageWidth -j \"" + file + "\"")
+    //var res = exec.sync(null, "exiftool -FileModifyDate -Title -Rating -Common -LensID -Subject -XPKeywords -Keywords -ImageHeight -ImageWidth -Make -CameraModel -ExposureTime -FocalLength -ISOSpeed -FStop -j \"" + file + "\"");
+    //fs.readFile(file, ['-imageWidth', '-imageHeight'], function (err, data) {
+    fs.readFile(file, function (err, data) {
+        if (err)
+            callback(err);
+        else {
+            exif.metadata(data, function (err, metadata) {
+                console.log(metadata);
+                if (err)
+                    callback(err);
+                else {
+                    var json = eval(metadata)[0];
+                    json.Tags = parseKeywords(json.Keywords).concat(parseKeywords(json.XPKeywords)).concat(parseKeywords(json.Subject)).unique();
+                    //console.log('parsed')
+                    // parse dateTaken
+                    json.DateTaken = parseDate(json.DateTimeOriginal, file);
+                    if (json.DateTaken == null) {
+                        json.DateTaken = parseDate(json.FileModifyDate, file);
+                    }
+
+                    callback(null, json);
+                }
+            });
         }
+    });
 
-        return json;
-    }, callback)
 
 }
 
