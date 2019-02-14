@@ -198,7 +198,7 @@ var ReadFileInfo = function (file, callback) {
                 if (err)
                     callback(err);
                 else {
-                    var json = eval(metadata)[0];
+                    var json = eval(metadata);
                     json.Tags = parseKeywords(json.Keywords).concat(parseKeywords(json.XPKeywords)).concat(parseKeywords(json.Subject)).unique();
                     //console.log('parsed')
                     // parse dateTaken
@@ -206,7 +206,7 @@ var ReadFileInfo = function (file, callback) {
                     if (json.DateTaken == null) {
                         json.DateTaken = parseDate(json.FileModifyDate, file);
                     }
-
+console.log(json)
                     callback(null, json);
                 }
             });
