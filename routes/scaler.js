@@ -167,7 +167,7 @@ var parseDate = function (date, file) {
 }
 
 var ReadFileInfo = function (file, callback) {
-    /*
+    
         sync(function () {
     
             //console.log("exiftool -FileModifyDate -Title -Rating -Common -Lens -Subject -XPKeywords -Keywords -ImageHeight -ImageWidth -j \"" + file + "\"")
@@ -184,8 +184,7 @@ var ReadFileInfo = function (file, callback) {
     
             return json;
         }, callback)
-    */
-/*
+    /*
     fs.readFile(file, function (err, data) {
         if (err)
             callback(err);
@@ -209,7 +208,7 @@ var ReadFileInfo = function (file, callback) {
         }
     });
 */
-
+/*
 try {
     new ExifImage({ image : file }, function (err, exifData) {
         if (err) {
@@ -231,7 +230,7 @@ try {
 } catch (err) {
     callback(err);
 }
-
+*/
 }
 
 var scale = function (data, outfile, options, callback) {
