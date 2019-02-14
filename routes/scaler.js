@@ -7,8 +7,9 @@ var fs = require('fs')
     , exec = require('child_process').exec
     , sync = require('sync')
     , db = require('./database')
-    , gm = require('gm')
-    , exif = require('exiftool');
+    , gm = require('gm');
+
+    var ExifImage = require('exif').ExifImage;
 /*
 db.initialize(function (err) {
     if (err)
@@ -184,7 +185,7 @@ var ReadFileInfo = function (file, callback) {
             return json;
         }, callback)
     */
-
+/*
     fs.readFile(file, function (err, data) {
         if (err)
             callback(err);
@@ -207,7 +208,29 @@ var ReadFileInfo = function (file, callback) {
             });
         }
     });
+*/
 
+try {
+    new ExifImage({ image : file }, function (err, exifData) {
+        if (err) {
+            callback(err);
+        }
+        else
+        {
+            var json = exifData.exif;
+            json.Tags = parseKeywords(json.Keywords).concat(parseKeywords(json.XPKeywords)).concat(parseKeywords(json.Subject)).unique();
+            //console.log('parsed')
+            // parse dateTaken
+            json.DateTaken = parseDate(json.DateTimeOriginal, file);
+            if (json.DateTaken == null) {
+                json.DateTaken = parseDate(json.FileModifyDate, file);
+            }
+            callback(null, json);
+        }
+    });
+} catch (err) {
+    callback(err);
+}
 
 }
 
