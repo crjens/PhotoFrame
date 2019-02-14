@@ -6,7 +6,8 @@ var fs = require('fs')
     , path = require('path')
     , exec = require('child_process').exec
     , sync = require('sync')
-    , db = require('./database');
+    , db = require('./database')
+    , gm = require('gm');
 /*
 db.initialize(function (err) {
     if (err)
@@ -219,8 +220,24 @@ var scale = function (data, outfile, options, callback) {
         var cropX = Math.round((w - clipW) / 2);
         var cropY = Math.round((h - clipH) / 2);
 
-        gmCommand = 'gm convert -quality 75 "' + data.SourceFile + '" -resize ' + w + 'x' + h + '! -crop ' + clipW + 'x' + clipH + '+' + cropX + '+' + cropY + ' +profile "*" -write "' + outfile;
-        gmCommand += '" -resize ' + options.thumbWidth + 'x' + options.thumbHeight + ' +profile "*" "' + thumbFile + '"';
+        //gmCommand = 'gm convert -quality 75 "' + data.SourceFile + '" -resize ' + w + 'x' + h + '! -crop ' + clipW + 'x' + clipH + '+' + cropX + '+' + cropY + ' +profile "*" -write "' + outfile;
+        //gmCommand += '" -resize ' + options.thumbWidth + 'x' + options.thumbHeight + ' +profile "*" "' + thumbFile + '"';
+
+        gm(data.SourceFile)
+            .quality(75)
+            .resize(w, h, '!')
+            .crop(clipW, clipH, cropX, cropY)
+            .noProfile()
+            .write(outfile, function (err) {
+                if (err) {
+                    callback(err);
+                } else {
+                    gm(data.SourceFile)
+                        .resize(options.thumbWidth, options.thumbHeight)
+                        .noProfile()
+                        .write(thumbFile, callback);
+                }
+            })
 
         data.DestWidth = clipW;
         data.DestHeight = clipH;
@@ -229,17 +246,30 @@ var scale = function (data, outfile, options, callback) {
         data.DestWidth = data.ImageWidth;
         data.DestHeight = data.ImageHeight;
 
-        gmCommand = 'gm convert "' + data.SourceFile + '" +profile "*" -write "' + outfile + '" -resize ' + options.thumbWidth + 'x' + options.thumbHeight + ' +profile "*" "' + thumbFile + '"';
+        //gmCommand = 'gm convert "' + data.SourceFile + '" +profile "*" -write "' + outfile + '" -resize ' + options.thumbWidth + 'x' + options.thumbHeight + ' +profile "*" "' + thumbFile + '"';
+
+        gm(data.SourceFile)
+            .noProfile()
+            .write(outfile, function (err) {
+                if (err) {
+                    callback(err);
+                } else {
+                    gm(data.SourceFile)
+                        .resize(options.thumbWidth, options.thumbHeight)
+                        .noProfile()
+                        .write(thumbFile, callback);
+                }
+            })
+
     }
 
+
+
+    /*
     exec(gmCommand, function (err) {
-        /*if (err)
-            console.log("error scaling: " + data.SourceFile + " : " + err);
-        else
-            console.log("scaled: " + data.SourceFile + ' ' + data.ImageWidth + 'x' + data.ImageHeight + ' -> ' + data.DestWidth + 'x' + data.DestHeight);
-*/
         callback(err);
     });
+    */
 }
 
 var ensureDirExists = function (dir, mode, callback) {
