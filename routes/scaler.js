@@ -35,73 +35,72 @@ var isImageFile = function (path) {
 var generateThumbs2 = function (file, tgtFile, options, callback) {
 
     sync(function () {
-        //try {
-        if (isImageFile(file)) {
-            var start = new Date();
-            //console.log('found: ' + file);            
-            //var tgtFile = file.replace(options.srcPath, options.tgtPath);
-            //console.log(tgtFile)
-            var ticket = ensureDirExists.future(null, path.dirname(tgtFile), 0777 & (~process.umask()));
-            var thumbFile = tgtFile.replace(options.tgtPath, options.thumbPath);
-            var ticket2 = ensureDirExists.future(null, path.dirname(thumbFile), 0777 & (~process.umask()));
+        try {
+            if (isImageFile(file)) {
+                var start = new Date();
+                //console.log('found: ' + file);            
+                //var tgtFile = file.replace(options.srcPath, options.tgtPath);
+                //console.log(tgtFile)
+                var ticket = ensureDirExists.future(null, path.dirname(tgtFile), 0777 & (~process.umask()));
+                var thumbFile = tgtFile.replace(options.tgtPath, options.thumbPath);
+                var ticket2 = ensureDirExists.future(null, path.dirname(thumbFile), 0777 & (~process.umask()));
 
-            var sStat = fs.stat.future(null, file);
-            var tStat = null;
+                var sStat = fs.stat.future(null, file);
+                var tStat = null;
 
-            try {
-                tStat = fs.stat.sync(null, tgtFile);
-            }
-            catch (err) {
+                try {
+                    tStat = fs.stat.sync(null, tgtFile);
+                }
+                catch (err) {
 
-                if (err.code != 'ENOENT') {
-                    //throw (err);
-                    return null;
+                    if (err.code != 'ENOENT') {
+                        //throw (err);
+                        return null;
+                    }
+                }
+
+                if (tStat == null || sStat.result.mtime.getTime() != tStat.mtime.getTime()) {
+                    //console.log('starting: ' + tgtFile)
+                    var pre = new Date() - start;
+                    start = new Date();
+
+                    var data = ReadFileInfo.sync(null, file);
+                    data.Telemetry = {};
+                    data.Telemetry.Start = pre;
+                    data.Telemetry.ReadFileInfo = new Date() - start;
+                    start = new Date();
+
+                    var x = ticket.result;  // make sure directory exists
+                    x = ticket2.result;
+                    scale.sync(null, data, tgtFile, options);
+
+                    data.Telemetry.Scale = new Date() - start;
+                    start = new Date();
+
+                    var relPath = tgtFile.replace(options.tgtPath, '');
+                    //            options.thumbs.insert(relPath);
+                    data.Telemetry.Insert = new Date() - start;
+                    start = new Date();
+
+                    //db.InsertFileInfo.sync(null, data, tgtFile);
+                    data.Telemetry.InsertFileInfo = new Date() - start;
+                    start = new Date();
+
+                    fs.utimes.sync(null, tgtFile, sStat.result.atime, sStat.result.mtime);
+                    fs.utimes.sync(null, thumbFile, sStat.result.atime, sStat.result.mtime);
+                    data.Telemetry.SetDestFileTimestamp = new Date() - start;
+
+                    return { Data: data, TgtFile: tgtFile };
+                    //console.log(data.Telemetry);
+                } else {
+                    //console.log('not processing: ' + tgtFile) 
                 }
             }
 
-            if (tStat == null || sStat.result.mtime.getTime() != tStat.mtime.getTime()) {
-                //console.log('starting: ' + tgtFile)
-                var pre = new Date() - start;
-                start = new Date();
-
-                var data = ReadFileInfo.sync(null, file);
-                data.Telemetry = {};
-                data.Telemetry.Start = pre;
-                data.Telemetry.ReadFileInfo = new Date() - start;
-                start = new Date();
-
-                var x = ticket.result;  // make sure directory exists
-                x = ticket2.result;
-                scale.sync(null, data, tgtFile, options);
-
-                data.Telemetry.Scale = new Date() - start;
-                start = new Date();
-
-                var relPath = tgtFile.replace(options.tgtPath, '');
-                //            options.thumbs.insert(relPath);
-                data.Telemetry.Insert = new Date() - start;
-                start = new Date();
-
-                //db.InsertFileInfo.sync(null, data, tgtFile);
-                data.Telemetry.InsertFileInfo = new Date() - start;
-                start = new Date();
-
-                fs.utimes.sync(null, tgtFile, sStat.result.atime, sStat.result.mtime);
-                fs.utimes.sync(null, thumbFile, sStat.result.atime, sStat.result.mtime);
-                data.Telemetry.SetDestFileTimestamp = new Date() - start;
-
-                return { Data: data, TgtFile: tgtFile };
-                //console.log(data.Telemetry);
-            } else {
-                //console.log('not processing: ' + tgtFile) 
-            }
         }
-
-        //}
-        //catch (err) {
-        //    //console.log("error: " + err);
-        //    return { Error: err };
-        //}
+        catch (err) {
+            //    //console.log("error: " + err);
+        }
 
         return null;
     }, callback)
@@ -272,7 +271,7 @@ var ProcessFiles = function (options, callback) {
     var file = filesToProcess.shift();
     if (file) {
         var tgtFile = file.replace(options.srcPath, options.tgtPath);
-        generateThumbs2(file, tgtFile, options,  function (err, result) {
+        generateThumbs2(file, tgtFile, options, function (err, result) {
             callback(err, file, result);
             ProcessFiles(options, callback);  // process next file
         });
