@@ -194,7 +194,7 @@ var ReadFileInfo = function (file, callback) {
             callback(err);
         else {
             exif.metadata(data, function (err, metadata) {
-                console.log(metadata);
+                //console.log(metadata);
                 if (err)
                     callback(err);
                 else {
