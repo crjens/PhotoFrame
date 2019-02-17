@@ -37,27 +37,27 @@ var generateThumbs2 = function (file, tgtFile, options, callback) {
 
     sync(function () {
         try {
-            console.log(process.pid + " generateThumbs2: " + file)
+            //console.log(process.pid + " generateThumbs2: " + file)
             if (isImageFile(file)) {
                 var start = new Date();
-                console.log(process.pid + " found: " + file);            
+                //console.log(process.pid + " found: " + file);            
                 //var tgtFile = file.replace(options.srcPath, options.tgtPath);
                 //console.log(tgtFile)
                 var ticket = ensureDirExists.future(null, path.dirname(tgtFile), 0777 & (~process.umask()));
                 var thumbFile = tgtFile.replace(options.tgtPath, options.thumbPath);
                 var ticket2 = ensureDirExists.future(null, path.dirname(thumbFile), 0777 & (~process.umask()));
 
-                console.log(process.pid + " found2: " + file);   
+                //console.log(process.pid + " found2: " + file);   
                 var sStat = fs.stat.future(null, file);
                 var tStat = null;
 
-                console.log(process.pid + " found3: " + file);   
+                //console.log(process.pid + " found3: " + file);   
 
                 try {
                     tStat = fs.stat.sync(null, tgtFile);
                 }
                 catch (err) {
-
+console.log(process.pid + " " + file + " err: " + err)
                     if (err.code != 'ENOENT') {
                         //throw (err);
                         return null;
