@@ -61,7 +61,7 @@ for (i = 0; i < os.cpus().length; i++) {
     console.log("started scaler process: " + scaler.pid)
 
     scaler.on('close', function(code, signal) {
-        console.log("Scaler " + pid + " received close event.  Signal: " + signal);
+        console.log("Scaler " + pid + " received close event. Code: " + code + "  Signal: " + signal);
     });
 
     scaler.on('error', function(err) {
@@ -69,7 +69,7 @@ for (i = 0; i < os.cpus().length; i++) {
     });
 
     scaler.on('exit', function(code, signal) {
-        console.log("Scaler " + pid + " received exit event.  Signal: " + signal);
+        console.log("Scaler " + pid + " received exit event. Code: " + code + "  Signal: " + signal);
     });
 
     scaler.on('disconnect', function() {
