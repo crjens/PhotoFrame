@@ -232,10 +232,16 @@ var scale = function (data, outfile, options, callback) {
                     if (err) {
                         callback(err);
                     } else {
-                        gm(data.SourceFile)
-                            .resize(options.thumbWidth, options.thumbHeight)
-                            .noProfile()
-                            .write(thumbFile, callback);
+                        try {
+                            gm(data.SourceFile)
+                                .resize(options.thumbWidth, options.thumbHeight)
+                                .noProfile()
+                                .write(thumbFile, callback);
+                        }
+                        catch (err) {
+                            console.log(err);
+                            callback(err);
+                        }
                     }
                 })
         }
@@ -259,10 +265,16 @@ var scale = function (data, outfile, options, callback) {
                     if (err) {
                         callback(err);
                     } else {
-                        gm(data.SourceFile)
-                            .resize(options.thumbWidth, options.thumbHeight)
-                            .noProfile()
-                            .write(thumbFile, callback);
+                        try {
+                            gm(data.SourceFile)
+                                .resize(options.thumbWidth, options.thumbHeight)
+                                .noProfile()
+                                .write(thumbFile, callback);
+                        }
+                        catch (err) {
+                            console.log(err);
+                            callback(err);
+                        }
                     }
                 })
         }
