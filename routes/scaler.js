@@ -223,20 +223,26 @@ var scale = function (data, outfile, options, callback) {
         //gmCommand += '" -resize ' + options.thumbWidth + 'x' + options.thumbHeight + ' +profile "*" "' + thumbFile + '"';
 
         try {
+            console.log("gm1: " + data.SourceFile)
             gm(data.SourceFile)
                 .quality(75)
                 .resize(w, h, '!')
                 .crop(clipW, clipH, cropX, cropY)
                 .noProfile()
                 .write(outfile, function (err) {
+                    console.log("gm2: " + data.SourceFile)
                     if (err) {
                         callback(err);
                     } else {
                         try {
+                            console.log("gm3: " + data.SourceFile)
                             gm(data.SourceFile)
                                 .resize(options.thumbWidth, options.thumbHeight)
                                 .noProfile()
-                                .write(thumbFile, callback);
+                                .write(thumbFile, function (err) {
+                                    console.log("gm4: " + data.SourceFile);
+                                    callback(err)
+                                });
                         }
                         catch (err) {
                             console.log(err);
@@ -259,17 +265,23 @@ var scale = function (data, outfile, options, callback) {
 
         //gmCommand = 'gm convert "' + data.SourceFile + '" +profile "*" -write "' + outfile + '" -resize ' + options.thumbWidth + 'x' + options.thumbHeight + ' +profile "*" "' + thumbFile + '"';
         try {
+            console.log("gm5: " + data.SourceFile)
             gm(data.SourceFile)
                 .noProfile()
                 .write(outfile, function (err) {
+                    console.log("gm6: " + data.SourceFile)
                     if (err) {
                         callback(err);
                     } else {
                         try {
+                            console.log("gm7: " + data.SourceFile)
                             gm(data.SourceFile)
                                 .resize(options.thumbWidth, options.thumbHeight)
                                 .noProfile()
-                                .write(thumbFile, callback);
+                                .write(thumbFile, function (err) {
+                                    console.log("gm8: " + data.SourceFile)
+                                    callback(err)
+                                });
                         }
                         catch (err) {
                             console.log(err);
