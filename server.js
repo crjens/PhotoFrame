@@ -54,29 +54,26 @@ var failed = 0;
 var skipped = 0;
 var scalers = [];
 var fork = require('child_process').fork;
-for (i = 0; i < os.cpus().length; i++) {
-//for (i = 0; i < 2; i++) {
-    StartScalerProcess();
-}
 
-var StartScalerProcess = function() {
+
+var StartScalerProcess = function () {
     var scaler = fork(__dirname + '/routes/scaler.js');
     var pid = scaler.pid;
     console.log("started scaler process: " + pid)
 
-    scaler.on('close', function(code, signal) {
+    scaler.on('close', function (code, signal) {
         console.log("Scaler " + pid + " received close event. Code: " + code + "  Signal: " + signal);
     });
 
-    scaler.on('error', function(err) {
+    scaler.on('error', function (err) {
         console.log("Scaler " + pid + " received error event.  Error: " + err);
     });
 
-    scaler.on('exit', function(code, signal) {
+    scaler.on('exit', function (code, signal) {
         console.log("Scaler " + pid + " received exit event. Code: " + code + "  Signal: " + signal);
     });
 
-    scaler.on('disconnect', function() {
+    scaler.on('disconnect', function () {
         console.log("Scaler " + pid + " received disconnect event");
     });
 
@@ -98,7 +95,7 @@ var StartScalerProcess = function() {
                     }
                     else {
                         complete++;
-                        console.log(new Date().toISOString() + " Pid: " + data.Pid + " " + data.File + " (complete: " + complete + ", scaled: " + scaled + ", total: " + total + ", failed: " + failed + ", skipped: "+skipped+")");
+                        console.log(new Date().toISOString() + " Pid: " + data.Pid + " " + data.File + " (complete: " + complete + ", scaled: " + scaled + ", total: " + total + ", failed: " + failed + ", skipped: " + skipped + ")");
                     }
 
                 });
@@ -114,7 +111,13 @@ var StartScalerProcess = function() {
 
     scalers.push(scaler);
 }
-var filesToProcess = [];
+
+for (i = 0; i < os.cpus().length; i++) {
+    //for (i = 0; i < 2; i++) {
+    StartScalerProcess();
+}
+
+
 
 var Enum = function (path) {
     scale.Enumerate(path, function (err, files) {
