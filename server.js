@@ -58,6 +58,23 @@ for (i = 0; i < os.cpus().length; i++) {
 //for (i = 0; i < 2; i++) {
     var scaler = fork(__dirname + '/routes/scaler.js');
     console.log("started scaler process: " + scaler.pid)
+
+    scaler.on('close', function(code, signal) {
+        console.log("Scaler " + scaler.pid + " received close event.  Signal: " + signal);
+    });
+
+    scaler.on('error', function(err) {
+        console.log("Scaler " + scaler.pid + " received error event.  Error: " + err);
+    });
+
+    scaler.on('exit', function(code, signal) {
+        console.log("Scaler " + scaler.pid + " received exit event.  Signal: " + signal);
+    });
+
+    scaler.on('disconnect', function() {
+        console.log("Scaler " + scaler.pid + " received disconnect event");
+    });
+
     scaler.send({ Action: "Start", Options: options });
 
     scaler.on('message', function (data) {
