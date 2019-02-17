@@ -222,21 +222,27 @@ var scale = function (data, outfile, options, callback) {
         //gmCommand = 'gm convert -quality 75 "' + data.SourceFile + '" -resize ' + w + 'x' + h + '! -crop ' + clipW + 'x' + clipH + '+' + cropX + '+' + cropY + ' +profile "*" -write "' + outfile;
         //gmCommand += '" -resize ' + options.thumbWidth + 'x' + options.thumbHeight + ' +profile "*" "' + thumbFile + '"';
 
-        gm(data.SourceFile)
-            .quality(75)
-            .resize(w, h, '!')
-            .crop(clipW, clipH, cropX, cropY)
-            .noProfile()
-            .write(outfile, function (err) {
-                if (err) {
-                    callback(err);
-                } else {
-                    gm(data.SourceFile)
-                        .resize(options.thumbWidth, options.thumbHeight)
-                        .noProfile()
-                        .write(thumbFile, callback);
-                }
-            })
+        try {
+            gm(data.SourceFile)
+                .quality(75)
+                .resize(w, h, '!')
+                .crop(clipW, clipH, cropX, cropY)
+                .noProfile()
+                .write(outfile, function (err) {
+                    if (err) {
+                        callback(err);
+                    } else {
+                        gm(data.SourceFile)
+                            .resize(options.thumbWidth, options.thumbHeight)
+                            .noProfile()
+                            .write(thumbFile, callback);
+                    }
+                })
+        }
+        catch (err) {
+            console.log(err);
+            callback(err);
+        }
 
         data.DestWidth = clipW;
         data.DestHeight = clipH;
@@ -246,20 +252,24 @@ var scale = function (data, outfile, options, callback) {
         data.DestHeight = data.ImageHeight;
 
         //gmCommand = 'gm convert "' + data.SourceFile + '" +profile "*" -write "' + outfile + '" -resize ' + options.thumbWidth + 'x' + options.thumbHeight + ' +profile "*" "' + thumbFile + '"';
-
-        gm(data.SourceFile)
-            .noProfile()
-            .write(outfile, function (err) {
-                if (err) {
-                    callback(err);
-                } else {
-                    gm(data.SourceFile)
-                        .resize(options.thumbWidth, options.thumbHeight)
-                        .noProfile()
-                        .write(thumbFile, callback);
-                }
-            })
-
+        try {
+            gm(data.SourceFile)
+                .noProfile()
+                .write(outfile, function (err) {
+                    if (err) {
+                        callback(err);
+                    } else {
+                        gm(data.SourceFile)
+                            .resize(options.thumbWidth, options.thumbHeight)
+                            .noProfile()
+                            .write(thumbFile, callback);
+                    }
+                })
+        }
+        catch (err) {
+            console.log(err);
+            callback(err);
+        }
     }
 }
 
