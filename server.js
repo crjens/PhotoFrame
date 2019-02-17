@@ -56,9 +56,13 @@ var scalers = [];
 var fork = require('child_process').fork;
 for (i = 0; i < os.cpus().length; i++) {
 //for (i = 0; i < 2; i++) {
+    StartScalerProcess();
+}
+
+var StartScalerProcess = function() {
     var scaler = fork(__dirname + '/routes/scaler.js');
     var pid = scaler.pid;
-    console.log("started scaler process: " + scaler.pid)
+    console.log("started scaler process: " + pid)
 
     scaler.on('close', function(code, signal) {
         console.log("Scaler " + pid + " received close event. Code: " + code + "  Signal: " + signal);
@@ -110,7 +114,6 @@ for (i = 0; i < os.cpus().length; i++) {
 
     scalers.push(scaler);
 }
-
 var filesToProcess = [];
 
 var Enum = function (path) {
