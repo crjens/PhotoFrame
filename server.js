@@ -112,8 +112,8 @@ var StartScalerProcess = function () {
     scalers.push(scaler);
 }
 
-for (i = 0; i < os.cpus().length; i++) {
-    //for (i = 0; i < 2; i++) {
+//for (i = 0; i < os.cpus().length; i++) {
+    for (i = 0; i < 1; i++) {
     StartScalerProcess();
 }
 
