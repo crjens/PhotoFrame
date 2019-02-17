@@ -37,9 +37,10 @@ var generateThumbs2 = function (file, tgtFile, options, callback) {
 
     sync(function () {
         try {
+            console.log("ProcessFiles: " + file)
             if (isImageFile(file)) {
                 var start = new Date();
-                //console.log('found: ' + file);            
+                console.log('found: ' + file);            
                 //var tgtFile = file.replace(options.srcPath, options.tgtPath);
                 //console.log(tgtFile)
                 var ticket = ensureDirExists.future(null, path.dirname(tgtFile), 0777 & (~process.umask()));
@@ -100,7 +101,7 @@ var generateThumbs2 = function (file, tgtFile, options, callback) {
 
         }
         catch (err) {
-            //    //console.log("error: " + err);
+            console.log("error: " + err);
         }
 
         return null;
@@ -332,6 +333,7 @@ var ProcessFiles = function (options, callback) {
 
     var file = filesToProcess.shift();
     if (file) {
+        console.log("ProcessFiles: " + file)
         try {
             var tgtFile = file.replace(options.srcPath, options.tgtPath);
             generateThumbs2(file, tgtFile, options, function (err, result) {
