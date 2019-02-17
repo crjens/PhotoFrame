@@ -9,7 +9,7 @@ var fs = require('fs')
     , db = require('./database')
     , gm = require('gm');
 
-    var ExifImage = require('exif').ExifImage;
+var ExifImage = require('exif').ExifImage;
 /*
 db.initialize(function (err) {
     if (err)
@@ -167,70 +167,23 @@ var parseDate = function (date, file) {
 }
 
 var ReadFileInfo = function (file, callback) {
-    
-        sync(function () {
-    
-            //console.log("exiftool -FileModifyDate -Title -Rating -Common -Lens -Subject -XPKeywords -Keywords -ImageHeight -ImageWidth -j \"" + file + "\"")
-            var res = exec.sync(null, "exiftool -FileModifyDate -Title -Rating -Common -LensID -Subject -XPKeywords -Keywords -ImageHeight -ImageWidth -Make -CameraModel -ExposureTime -FocalLength -ISOSpeed -FStop -j \"" + file + "\"");
-            //console.log(res)
-            var json = eval(res)[0];
-            json.Tags = parseKeywords(json.Keywords).concat(parseKeywords(json.XPKeywords)).concat(parseKeywords(json.Subject)).unique();
-            //console.log('parsed')
-            // parse dateTaken
-            json.DateTaken = parseDate(json.DateTimeOriginal, file);
-            if (json.DateTaken == null) {
-                json.DateTaken = parseDate(json.FileModifyDate, file);
-            }
-    
-            return json;
-        }, callback)
-    /*
-    fs.readFile(file, function (err, data) {
-        if (err)
-            callback(err);
-        else {
-            exif.metadata(data, function (err, metadata) {
-                //console.log(metadata);
-                if (err)
-                    callback(err);
-                else {
-                    var json = eval(metadata);
-                    json.Tags = parseKeywords(json.Keywords).concat(parseKeywords(json.XPKeywords)).concat(parseKeywords(json.Subject)).unique();
-                    //console.log('parsed')
-                    // parse dateTaken
-                    json.DateTaken = parseDate(json.DateTimeOriginal, file);
-                    if (json.DateTaken == null) {
-                        json.DateTaken = parseDate(json.FileModifyDate, file);
-                    }
-                    callback(null, json);
-                }
-            });
+
+    sync(function () {
+
+        //console.log("exiftool -FileModifyDate -Title -Rating -Common -Lens -Subject -XPKeywords -Keywords -ImageHeight -ImageWidth -j \"" + file + "\"")
+        var res = exec.sync(null, "exiftool -FileModifyDate -Title -Rating -Common -LensID -Subject -XPKeywords -Keywords -ImageHeight -ImageWidth -Make -CameraModel -ExposureTime -FocalLength -ISOSpeed -FStop -j \"" + file + "\"");
+        //console.log(res)
+        var json = eval(res)[0];
+        json.Tags = parseKeywords(json.Keywords).concat(parseKeywords(json.XPKeywords)).concat(parseKeywords(json.Subject)).unique();
+        //console.log('parsed')
+        // parse dateTaken
+        json.DateTaken = parseDate(json.DateTimeOriginal, file);
+        if (json.DateTaken == null) {
+            json.DateTaken = parseDate(json.FileModifyDate, file);
         }
-    });
-*/
-/*
-try {
-    new ExifImage({ image : file }, function (err, exifData) {
-        if (err) {
-            callback(err);
-        }
-        else
-        {
-            var json = exifData.exif;
-            json.Tags = parseKeywords(json.Keywords).concat(parseKeywords(json.XPKeywords)).concat(parseKeywords(json.Subject)).unique();
-            //console.log('parsed')
-            // parse dateTaken
-            json.DateTaken = parseDate(json.DateTimeOriginal, file);
-            if (json.DateTaken == null) {
-                json.DateTaken = parseDate(json.FileModifyDate, file);
-            }
-            callback(null, json);
-        }
-    });
-} catch (err) {
-    callback(err);
-}
-*/
+
+        return json;
+    }, callback)
 }
 
 var scale = function (data, outfile, options, callback) {
@@ -308,14 +261,6 @@ var scale = function (data, outfile, options, callback) {
             })
 
     }
-
-
-
-    /*
-    exec(gmCommand, function (err) {
-        callback(err);
-    });
-    */
 }
 
 var ensureDirExists = function (dir, mode, callback) {
@@ -346,11 +291,21 @@ var ProcessFiles = function (options, callback) {
 
     var file = filesToProcess.shift();
     if (file) {
-        var tgtFile = file.replace(options.srcPath, options.tgtPath);
-        generateThumbs2(file, tgtFile, options, function (err, result) {
-            callback(err, file, result);
-            ProcessFiles(options, callback);  // process next file
-        });
+        try {
+            var tgtFile = file.replace(options.srcPath, options.tgtPath);
+            generateThumbs2(file, tgtFile, options, function (err, result) {
+                try {
+                    callback(err, file, result);
+                }
+                catch (error) {
+                    console.err(error);
+                }
+                ProcessFiles(options, callback);  // process next file
+            });
+        } catch (error) {
+            console.err(error);
+            setTimeout(ProcessFiles, 1000, options, callback);
+        }
     } else {
         // no files to process - try again later
         setTimeout(ProcessFiles, 10000, options, callback);
