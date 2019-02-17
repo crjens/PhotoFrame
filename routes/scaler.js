@@ -61,7 +61,7 @@ var generateThumbs2 = function (file, tgtFile, options, callback) {
                 }
 
                 if (tStat == null || sStat.result.mtime.getTime() != tStat.mtime.getTime()) {
-                    //console.log('starting: ' + tgtFile)
+                    console.log('starting: ' + tgtFile)
                     var pre = new Date() - start;
                     start = new Date();
 
@@ -168,26 +168,33 @@ var parseDate = function (date, file) {
 
 var ReadFileInfo = function (file, callback) {
 
+    console.log("ReadFileInfo1: " + file)
     sync(function () {
 
-        //console.log("exiftool -FileModifyDate -Title -Rating -Common -Lens -Subject -XPKeywords -Keywords -ImageHeight -ImageWidth -j \"" + file + "\"")
-        var res = exec.sync(null, "exiftool -FileModifyDate -Title -Rating -Common -LensID -Subject -XPKeywords -Keywords -ImageHeight -ImageWidth -Make -CameraModel -ExposureTime -FocalLength -ISOSpeed -FStop -j \"" + file + "\"");
-        //console.log(res)
-        var json = eval(res)[0];
-        json.Tags = parseKeywords(json.Keywords).concat(parseKeywords(json.XPKeywords)).concat(parseKeywords(json.Subject)).unique();
-        //console.log('parsed')
-        // parse dateTaken
-        json.DateTaken = parseDate(json.DateTimeOriginal, file);
-        if (json.DateTaken == null) {
-            json.DateTaken = parseDate(json.FileModifyDate, file);
+        try {
+            //console.log("exiftool -FileModifyDate -Title -Rating -Common -Lens -Subject -XPKeywords -Keywords -ImageHeight -ImageWidth -j \"" + file + "\"")
+            var res = exec.sync(null, "exiftool -FileModifyDate -Title -Rating -Common -LensID -Subject -XPKeywords -Keywords -ImageHeight -ImageWidth -Make -CameraModel -ExposureTime -FocalLength -ISOSpeed -FStop -j \"" + file + "\"");
+            //console.log(res)
+            console.log("ReadFileInfo2: " + file)
+            var json = eval(res)[0];
+            json.Tags = parseKeywords(json.Keywords).concat(parseKeywords(json.XPKeywords)).concat(parseKeywords(json.Subject)).unique();
+            //console.log('parsed')
+            // parse dateTaken
+            json.DateTaken = parseDate(json.DateTimeOriginal, file);
+            if (json.DateTaken == null) {
+                json.DateTaken = parseDate(json.FileModifyDate, file);
+            }
+            console.log("ReadFileInfo3: " + file)
+            return json;
+        } catch (err) {
+            console.log(err);
         }
-
-        return json;
+        return null;
     }, callback)
 }
 
 var scale = function (data, outfile, options, callback) {
-    //console.log('scale')
+    console.log('scale')
 
     var thumbFile = outfile.replace(options.tgtPath, options.thumbPath);
     var gmCommand;
