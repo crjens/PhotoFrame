@@ -63,7 +63,7 @@ console.log(process.pid + " " + file + " err: " + err)
                         return null;
                     }
                 }
-                //console.log(process.pid + " found4: " + file);   
+                console.log(process.pid + " found4: " + file);   
 
                 if (tStat == null || sStat.result.mtime.getTime() != tStat.mtime.getTime()) {
                     console.log(process.pid + " starting: " + tgtFile)
