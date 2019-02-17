@@ -51,7 +51,7 @@ var generateThumbs2 = function (file, tgtFile, options, callback) {
                 var sStat = fs.stat.future(null, file);
                 var tStat = null;
 
-                //console.log(process.pid + " found3: " + file);   
+                console.log(process.pid + " found3: " + file);   
 
                 try {
                     tStat = fs.stat.sync(null, tgtFile);
