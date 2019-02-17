@@ -37,18 +37,21 @@ var generateThumbs2 = function (file, tgtFile, options, callback) {
 
     sync(function () {
         try {
-            console.log("ProcessFiles: " + file)
+            console.log(process.pid + " generateThumbs2: " + file)
             if (isImageFile(file)) {
                 var start = new Date();
-                console.log('found: ' + file);            
+                console.log(process.pid + " found: " + file);            
                 //var tgtFile = file.replace(options.srcPath, options.tgtPath);
                 //console.log(tgtFile)
                 var ticket = ensureDirExists.future(null, path.dirname(tgtFile), 0777 & (~process.umask()));
                 var thumbFile = tgtFile.replace(options.tgtPath, options.thumbPath);
                 var ticket2 = ensureDirExists.future(null, path.dirname(thumbFile), 0777 & (~process.umask()));
 
+                console.log(process.pid + " found2: " + file);   
                 var sStat = fs.stat.future(null, file);
                 var tStat = null;
+
+                console.log(process.pid + " found3: " + file);   
 
                 try {
                     tStat = fs.stat.sync(null, tgtFile);
@@ -60,9 +63,10 @@ var generateThumbs2 = function (file, tgtFile, options, callback) {
                         return null;
                     }
                 }
+                console.log(process.pid + " found4: " + file);   
 
                 if (tStat == null || sStat.result.mtime.getTime() != tStat.mtime.getTime()) {
-                    console.log('starting: ' + tgtFile)
+                    console.log(process.pid + " starting: " + tgtFile)
                     var pre = new Date() - start;
                     start = new Date();
 
@@ -333,7 +337,7 @@ var ProcessFiles = function (options, callback) {
 
     var file = filesToProcess.shift();
     if (file) {
-        console.log("ProcessFiles: " + file)
+        //console.log("ProcessFiles: " + file)
         try {
             var tgtFile = file.replace(options.srcPath, options.tgtPath);
             generateThumbs2(file, tgtFile, options, function (err, result) {
