@@ -37,7 +37,7 @@ var generateThumbs2 = function (file, tgtFile, options, callback) {
 
     sync(function () {
         try {
-            //console.log(process.pid + " generateThumbs2: " + file)
+            console.log(process.pid + " generateThumbs2: " + file)
             if (isImageFile(file)) {
                 var start = new Date();
                 //console.log(process.pid + " found: " + file);            
@@ -341,7 +341,7 @@ var ProcessFiles = function (options, callback) {
 
     var file = filesToProcess.shift();
     if (file) {
-        //console.log("ProcessFiles: " + file)
+        console.log("ProcessFiles: " + file)
         try {
             var tgtFile = file.replace(options.srcPath, options.tgtPath);
             generateThumbs2(file, tgtFile, options, function (err, result) {
