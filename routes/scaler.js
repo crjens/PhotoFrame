@@ -353,14 +353,12 @@ var ProcessFiles = function (options, callback) {
                         console.log(res)
                         if (res)
                             callback(res.err, file, res.result);
-                        return null;
+                        //return null;
                     }
                     catch (err) {
-                        console.log(err)
+                        console.log("generateThumbs2 exception: " + err)
                     }
-                    return null;
-                }, function (x, y) { 
-                    console.log(x + " : " + y)
+                    //return null;
                 });
                 console.log("ProcessFiles2: " + file)
                 /*
