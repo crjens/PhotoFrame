@@ -359,7 +359,9 @@ var ProcessFiles = function (options, callback) {
                         console.log(err)
                     }
                     return null;
-                }, function (x, y) { });
+                }, function (x, y) { 
+                    console.log(x + " : " + y)
+                });
 
                 /*
                 generateThumbs2(file, tgtFile, options, function (err, result) {
