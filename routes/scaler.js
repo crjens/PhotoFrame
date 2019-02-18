@@ -348,10 +348,17 @@ var ProcessFiles = function (options, callback) {
                 var tgtFile = file.replace(options.srcPath, options.tgtPath);
 
                 sync(function () {
-                    var res = generateThumbs2.sync(null, file, tgtFile, options);
-                    console.log(res)
-                    if (res)
-                        callback(res.err, file, res.result);
+                    try {
+                        var res = generateThumbs2.sync(null, file, tgtFile, options);
+                        console.log(res)
+                        if (res)
+                            callback(res.err, file, res.result);
+                        return null;
+                    }
+                    catch (err) {
+                        console.log(err)
+                    }
+                    return null;
                 }, function (x, y) { });
 
                 /*
