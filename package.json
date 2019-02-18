@@ -13,6 +13,7 @@
         "basic-auth": ">=1.0.0",
         "gm": ">=1.23.1",
         "socket.io": ">=0.9.16",
+        "child-process": ">=1.0.2",
         "node-exiftool":  ">=2.3.0"
     },
     "config":{
