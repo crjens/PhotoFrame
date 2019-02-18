@@ -347,10 +347,12 @@ var ProcessFiles = function (options, callback) {
             try {
                 var tgtFile = file.replace(options.srcPath, options.tgtPath);
 
-                var res = generateThumbs2.sync(null, file, tgtFile, options);
-                console.log(res)
-                if (res)
-                    callback(res.err, file, res.result);
+                sync(function () {
+                    var res = generateThumbs2.sync(null, file, tgtFile, options);
+                    console.log(res)
+                    if (res)
+                        callback(res.err, file, res.result);
+                }, function (x, y) { });
 
                 /*
                 generateThumbs2(file, tgtFile, options, function (err, result) {
@@ -367,7 +369,7 @@ var ProcessFiles = function (options, callback) {
                 console.log(error);
                 setTimeout(ProcessFiles, 1000, options, callback);
             }
-        } 
+        }
         /*else {
             // no files to process - try again later
             setTimeout(ProcessFiles, 10000, options, callback);
