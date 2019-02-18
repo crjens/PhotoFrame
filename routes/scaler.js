@@ -348,7 +348,9 @@ var ProcessFiles = function (options, callback) {
                 var tgtFile = file.replace(options.srcPath, options.tgtPath);
 
                 var res = generateThumbs2.sync(null, file, tgtFile, options);
-                callback(res.err, file, res.result);
+                console.log(res)
+                if (res)
+                    callback(res.err, file, res.result);
 
                 /*
                 generateThumbs2(file, tgtFile, options, function (err, result) {
@@ -362,7 +364,7 @@ var ProcessFiles = function (options, callback) {
                 });
                 */
             } catch (error) {
-                console.err(error);
+                console.log(error);
                 setTimeout(ProcessFiles, 1000, options, callback);
             }
         } 
