@@ -37,7 +37,7 @@ var generateThumbs2 = function (file, tgtFile, options, callback) {
 
     sync(function () {
         try {
-            console.log(process.pid + " generateThumbs2: " + file)
+            //console.log(process.pid + " generateThumbs2: " + file)
             if (isImageFile(file)) {
                 var start = new Date();
                 //console.log(process.pid + " found: " + file);            
@@ -52,7 +52,7 @@ var generateThumbs2 = function (file, tgtFile, options, callback) {
                 var sStat = fs.statSync(file);
                 var tStat = null;
 
-                console.log(process.pid + " " + sStat.mtime.getTime());
+                //console.log(process.pid + " " + sStat.mtime.getTime());
 
                 try {
                     tStat = fs.statSync(tgtFile);
@@ -68,7 +68,7 @@ var generateThumbs2 = function (file, tgtFile, options, callback) {
                 //console.log(process.pid + " found4: " + file);
 
                 if (tStat == null || sStat.mtime.getTime() != tStat.mtime.getTime()) {
-                    console.log(process.pid + " " + tStat.mtime.getTime());
+                   // console.log(process.pid + " " + tStat.mtime.getTime());
                     var pre = new Date() - start;
                     start = new Date();
 
@@ -98,13 +98,15 @@ var generateThumbs2 = function (file, tgtFile, options, callback) {
                     fs.utimes.sync(null, thumbFile, sStat.result.atime, sStat.result.mtime);
                     data.Telemetry.SetDestFileTimestamp = new Date() - start;
 
+                    console.log('thumb generated: ' + file)
+
                     return { Data: data, TgtFile: tgtFile };
                     //console.log(data.Telemetry);
                 } else {
                     console.log('not processing: ' + file)
                 }
             } else {
-                console.log("not image file")
+                console.log("not image file: " + file)
             }
 
         }
@@ -346,7 +348,7 @@ var ProcessFiles = function (options, callback) {
             
             try {
                 var tgtFile = file.replace(options.srcPath, options.tgtPath);
-                console.log("ProcessFiles1: " + file)
+                console.log("Start processing: " + file)
                 sync(function () {
                     try {
                         var res = generateThumbs2.sync(null, file, tgtFile, options);
@@ -360,7 +362,7 @@ var ProcessFiles = function (options, callback) {
                     }
                     //return null;
                 });
-                console.log("ProcessFiles2: " + file)
+                console.log("Finished processing: " + file)
                 /*
                 generateThumbs2(file, tgtFile, options, function (err, result) {
                     try {
@@ -373,6 +375,7 @@ var ProcessFiles = function (options, callback) {
                 });
                 */
             } catch (error) {
+                console.log("Error processing: " + file)
                 console.log(error);
               //  setTimeout(ProcessFiles, 1000, options, callback);
             }
@@ -383,6 +386,7 @@ var ProcessFiles = function (options, callback) {
         }*/
     } while (file);
 
+    console.log("Finished processing queue, sleeping for 10s")
     // no files to process - try again later
     setTimeout(ProcessFiles, 10000, options, callback);
 }
