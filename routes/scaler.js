@@ -67,7 +67,7 @@ console.log(process.pid + " " + file + " err: " + err)
                 }
                 console.log(process.pid + " found4: " + file);   
 
-                if (tStat == null || sStat.result.mtime.getTime() != tStat.mtime.getTime()) {
+                if (tStat == null || sStat.mtime.getTime() != tStat.mtime.getTime()) {
                     console.log(process.pid + " starting: " + tgtFile)
                     var pre = new Date() - start;
                     start = new Date();
@@ -101,7 +101,7 @@ console.log(process.pid + " " + file + " err: " + err)
                     return { Data: data, TgtFile: tgtFile };
                     //console.log(data.Telemetry);
                 } else {
-                    //console.log('not processing: ' + tgtFile) 
+                    console.log('not processing: ' + File) 
                 }
             }
 
