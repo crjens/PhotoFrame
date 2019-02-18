@@ -47,28 +47,28 @@ var generateThumbs2 = function (file, tgtFile, options, callback) {
                 var thumbFile = tgtFile.replace(options.tgtPath, options.thumbPath);
                 var ticket2 = ensureDirExists.future(null, path.dirname(thumbFile), 0777 & (~process.umask()));
 
-                console.log(process.pid + " found2: " + file);   
+                console.log(process.pid + " found2: " + file);
                 //var sStat = fs.stat.future(null, file);
                 var sStat = fs.statSync(file);
                 var tStat = null;
 
-                console.log(process.pid + " found3: " + file + " " + tgtFile);   
+                console.log(process.pid + " " + sStat.mtime.getTime());
 
                 try {
                     tStat = fs.statSync(tgtFile);
                     //tStat = fs.stat.sync(null, tgtFile);
                 }
                 catch (err) {
-console.log(process.pid + " " + file + " err: " + err)
+                    console.log(process.pid + " " + file + " err: " + err)
                     if (err.code != 'ENOENT') {
                         //throw (err);
                         return null;
                     }
                 }
-                console.log(process.pid + " found4: " + file);   
+                //console.log(process.pid + " found4: " + file);
 
                 if (tStat == null || sStat.mtime.getTime() != tStat.mtime.getTime()) {
-                    console.log(process.pid + " starting: " + tgtFile)
+                    console.log(process.pid + " " + tStat.mtime.getTime());
                     var pre = new Date() - start;
                     start = new Date();
 
@@ -101,8 +101,10 @@ console.log(process.pid + " " + file + " err: " + err)
                     return { Data: data, TgtFile: tgtFile };
                     //console.log(data.Telemetry);
                 } else {
-                    console.log('not processing: ' + File) 
+                    console.log('not processing: ' + file)
                 }
+            } else {
+                console.log("not image file")
             }
 
         }
