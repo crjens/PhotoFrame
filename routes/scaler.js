@@ -339,28 +339,41 @@ var ensureDirExists = function (dir, mode, callback) {
 
 var ProcessFiles = function (options, callback) {
 
-    var file = filesToProcess.shift();
-    if (file) {
-        console.log("ProcessFiles: " + file)
-        try {
-            var tgtFile = file.replace(options.srcPath, options.tgtPath);
-            generateThumbs2(file, tgtFile, options, function (err, result) {
-                try {
-                    callback(err, file, result);
-                }
-                catch (error) {
-                    console.err(error);
-                }
-                ProcessFiles(options, callback);  // process next file
-            });
-        } catch (error) {
-            console.err(error);
-            setTimeout(ProcessFiles, 1000, options, callback);
-        }
-    } else {
-        // no files to process - try again later
-        setTimeout(ProcessFiles, 10000, options, callback);
-    }
+    var file;
+    do {
+        file = filesToProcess.shift();
+        if (file) {
+            console.log("ProcessFiles: " + file)
+            try {
+                var tgtFile = file.replace(options.srcPath, options.tgtPath);
+
+                var res = generateThumbs2.sync(null, file, tgtFile, options);
+                callback(res.err, file, res.result);
+
+                /*
+                generateThumbs2(file, tgtFile, options, function (err, result) {
+                    try {
+                        callback(err, file, result);
+                    }
+                    catch (error) {
+                        console.err(error);
+                    }
+                    ProcessFiles(options, callback);  // process next file
+                });
+                */
+            } catch (error) {
+                console.err(error);
+                setTimeout(ProcessFiles, 1000, options, callback);
+            }
+        } 
+        /*else {
+            // no files to process - try again later
+            setTimeout(ProcessFiles, 10000, options, callback);
+        }*/
+    } while (file);
+
+    // no files to process - try again later
+    setTimeout(ProcessFiles, 10000, options, callback);
 }
 
 process.on('message', function (data) {
