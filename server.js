@@ -81,9 +81,9 @@ var StartScalerProcess = function () {
 
     scaler.on('message', function (data) {
         try {
+            //console.log(JSON.stringify(data))
             if (data.Error) {
                 failed++;
-                console.error(data.Error);
             }
             else if (data.Data != null) {
                 var result = data.Data;
@@ -91,13 +91,11 @@ var StartScalerProcess = function () {
                 db.InsertFileInfo(result.Data, result.TgtFile, function (err) {
                     if (err) {
                         failed++;
-                        console.error(err);
                     }
                     else {
                         complete++;
                         console.log(new Date().toISOString() + " Pid: " + data.Pid + " " + data.File + " (complete: " + complete + ", scaled: " + scaled + ", total: " + total + ", failed: " + failed + ", skipped: " + skipped + ")");
                     }
-
                 });
             } else {
                 skipped++;
@@ -111,13 +109,13 @@ var StartScalerProcess = function () {
 
     scalers.push(scaler);
 }
-
+var scalersToUse = 1;
+if (os.cpus().length > 1)
+    scalersToUse = 2;
 //for (i = 0; i < os.cpus().length; i++) {
-    for (i = 0; i < 1; i++) {
+for (i = 0; i < scalersToUse; i++) {
     StartScalerProcess();
 }
-
-
 
 var Enum = function (path) {
     scale.Enumerate(path, function (err, files) {

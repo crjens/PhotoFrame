@@ -10,13 +10,10 @@
         "body-parser": ">=1.9.0",
         "serve-favicon": ">=2.1.5",
         "method-override": ">=2.2.0",
-        "on-finished": ">=2.1.0",
         "basic-auth": ">=1.0.0",
         "gm": ">=1.23.1",
-        "jade": ">=0.35.0",
         "socket.io": ">=0.9.16",
-        "sync":  ">=0.2.2",
-        "exif":  ">=0.6.0"
+        "node-exiftool":  ">=2.3.0"
     },
     "config":{
         "unsafe-perm":true

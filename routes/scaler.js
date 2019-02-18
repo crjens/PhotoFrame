@@ -5,18 +5,10 @@
 var fs = require('fs')
     , path = require('path')
     , exec = require('child_process').exec
-    , sync = require('sync')
     , db = require('./database')
-    , gm = require('gm');
-
-var ExifImage = require('exif').ExifImage;
-/*
-db.initialize(function (err) {
-    if (err)
-        console.log("Sql initializing database: " + err);
-    else
-        console.log("Sql database initialized");
-});*/
+    , gm = require('gm')
+    , util = require('util')
+    , exiftool = require('node-exiftool');
 
 String.prototype.endsWith = function (str) { return (this.match(str + "$") == str) }
 String.prototype.escape = function (str) { return (this.replace(/'/g, "''")) }
@@ -33,89 +25,73 @@ var isImageFile = function (path) {
     return lPath.endsWith(".jpg");// || lPath.endsWith(".nef") || lPath.endsWith(".cr2");
 }
 
-var generateThumbs2 = function (file, tgtFile, options, callback) {
+const ep = new exiftool.ExiftoolProcess();
 
-    sync(function () {
-        try {
-            //console.log(process.pid + " generateThumbs2: " + file)
-            if (isImageFile(file)) {
-                var start = new Date();
-                //console.log(process.pid + " found: " + file);            
-                //var tgtFile = file.replace(options.srcPath, options.tgtPath);
-                //console.log(tgtFile)
-                var ticket = ensureDirExists.future(null, path.dirname(tgtFile), 0777 & (~process.umask()));
-                var thumbFile = tgtFile.replace(options.tgtPath, options.thumbPath);
-                var ticket2 = ensureDirExists.future(null, path.dirname(thumbFile), 0777 & (~process.umask()));
+process.on('exit', function (code) {
+    var exitMsg = 'Process exited with code ' + code;
+    console.log(exitMsg);
+    ep2.close();
+    // log exitMsg synchronously
+});
 
-                console.log(process.pid + " found2: " + file);
-                //var sStat = fs.stat.future(null, file);
-                var sStat = fs.statSync(file);
-                var tStat = null;
+var generateThumbs2 = async function (file, tgtFile, options, callback) {
 
-                //console.log(process.pid + " " + sStat.mtime.getTime());
+    try {
+        if (isImageFile(file)) {
+            var start = new Date();
 
-                try {
-                    tStat = fs.statSync(tgtFile);
-                    //tStat = fs.stat.sync(null, tgtFile);
+            var ticket = await EnsureDirExistsAsync(path.dirname(tgtFile), 0777 & (~process.umask()));
+            var thumbFile = tgtFile.replace(options.tgtPath, options.thumbPath);
+            var ticket2 = await EnsureDirExistsAsync(path.dirname(thumbFile), 0777 & (~process.umask()));
+
+            //console.log(process.pid + " found2: " + file);
+            var sStat = fs.statSync(file);
+            var tStat = null;
+
+            try {
+                tStat = fs.statSync(tgtFile);
+                //tStat = fs.stat.sync(null, tgtFile);
+            }
+            catch (err) {
+                //console.log(process.pid + " " + file + " err: " + err)
+                if (err.code != 'ENOENT') {
+                    //throw (err);
+                    callback(null);
+                    return;
                 }
-                catch (err) {
-                    console.log(process.pid + " " + file + " err: " + err)
-                    if (err.code != 'ENOENT') {
-                        //throw (err);
-                        return null;
-                    }
-                }
-                //console.log(process.pid + " found4: " + file);
-
-                if (tStat == null || sStat.mtime.getTime() != tStat.mtime.getTime()) {
-                   // console.log(process.pid + " " + tStat.mtime.getTime());
-                    var pre = new Date() - start;
-                    start = new Date();
-
-                    var data = ReadFileInfo.sync(null, file);
-                    data.Telemetry = {};
-                    data.Telemetry.Start = pre;
-                    data.Telemetry.ReadFileInfo = new Date() - start;
-                    start = new Date();
-
-                    var x = ticket.result;  // make sure directory exists
-                    x = ticket2.result;
-                    scale.sync(null, data, tgtFile, options);
-
-                    data.Telemetry.Scale = new Date() - start;
-                    start = new Date();
-
-                    var relPath = tgtFile.replace(options.tgtPath, '');
-                    //            options.thumbs.insert(relPath);
-                    data.Telemetry.Insert = new Date() - start;
-                    start = new Date();
-
-                    //db.InsertFileInfo.sync(null, data, tgtFile);
-                    data.Telemetry.InsertFileInfo = new Date() - start;
-                    start = new Date();
-
-                    fs.utimes.sync(null, tgtFile, sStat.result.atime, sStat.result.mtime);
-                    fs.utimes.sync(null, thumbFile, sStat.result.atime, sStat.result.mtime);
-                    data.Telemetry.SetDestFileTimestamp = new Date() - start;
-
-                    console.log('thumb generated: ' + file)
-
-                    return { Data: data, TgtFile: tgtFile };
-                    //console.log(data.Telemetry);
-                } else {
-                    console.log('not processing: ' + file)
-                }
-            } else {
-                console.log("not image file: " + file)
             }
 
-        }
-        catch (err) {
-            console.log("error: " + err);
-        }
+            if (tStat == null || sStat.mtime.getTime() != tStat.mtime.getTime()) {
+                var pre = new Date() - start;
+                start = new Date();
 
-        return null;
-    }, callback)
+                var data = await ReadFileInfoAsync(file);
+                //  console.log("exif:" + JSON.stringify(data))
+                data.Telemetry = {};
+                data.Telemetry.Start = pre;
+                data.Telemetry.ReadFileInfo = new Date() - start;
+                start = new Date();
+
+                await ScaleAsync(data, tgtFile, options);
+                data.Telemetry.Scale = new Date() - start;
+                start = new Date();
+
+                var relPath = tgtFile.replace(options.tgtPath, '');
+                start = new Date();
+
+                fs.utimesSync(tgtFile, sStat.atime, sStat.mtime);
+                fs.utimesSync(thumbFile, sStat.atime, sStat.mtime);
+                data.Telemetry.SetDestFileTimestamp = new Date() - start;
+
+                callback(null, { Data: data, TgtFile: tgtFile });
+            } 
+        } 
+        
+        callback(null);
+    }
+    catch (err) {
+        callback(err);
+    }
 }
 
 var parseKeywords = function (obj) {
@@ -179,33 +155,33 @@ var parseDate = function (date, file) {
 
 var ReadFileInfo = function (file, callback) {
 
-    console.log("ReadFileInfo1: " + file)
-    sync(function () {
-
-        try {
-            //console.log("exiftool -FileModifyDate -Title -Rating -Common -Lens -Subject -XPKeywords -Keywords -ImageHeight -ImageWidth -j \"" + file + "\"")
-            var res = exec.sync(null, "exiftool -FileModifyDate -Title -Rating -Common -LensID -Subject -XPKeywords -Keywords -ImageHeight -ImageWidth -Make -CameraModel -ExposureTime -FocalLength -ISOSpeed -FStop -j \"" + file + "\"");
-            //console.log(res)
-            console.log("ReadFileInfo2: " + file)
-            var json = eval(res)[0];
+    ep
+        .open()
+        .then(() => ep.readMetadata(file, ['FileModifyDate', 'Title', 'Rating', 'Common', 'Lens', 'Subject', 'XPKeywords', 'Keywords', 'ImageHeight', 'ImageWidth']/* ['-File:all']*/))
+        .then((json) => {
+            json = json.data[0];
             json.Tags = parseKeywords(json.Keywords).concat(parseKeywords(json.XPKeywords)).concat(parseKeywords(json.Subject)).unique();
-            //console.log('parsed')
             // parse dateTaken
             json.DateTaken = parseDate(json.DateTimeOriginal, file);
-            if (json.DateTaken == null) {
+            if (json.DateTaken == null)
                 json.DateTaken = parseDate(json.FileModifyDate, file);
-            }
-            console.log("ReadFileInfo3: " + file)
-            return json;
-        } catch (err) {
-            console.log(err);
-        }
-        return null;
-    }, callback)
+
+            //        ep.close();
+            callback(null, json);
+        }/*, (err) => {
+            ep.close()
+            console.log("caught1: " + err);
+            callback(err);
+        }*/)
+        .then(() => ep.close())
+        .catch((err) => {
+            ep.close();
+            console.log("caught2: " + err);
+            callback(err);
+        });
 }
 
 var scale = function (data, outfile, options, callback) {
-    console.log('scale')
 
     var thumbFile = outfile.replace(options.tgtPath, options.thumbPath);
     var gmCommand;
@@ -237,40 +213,29 @@ var scale = function (data, outfile, options, callback) {
         var cropX = Math.round((w - clipW) / 2);
         var cropY = Math.round((h - clipH) / 2);
 
-        //gmCommand = 'gm convert -quality 75 "' + data.SourceFile + '" -resize ' + w + 'x' + h + '! -crop ' + clipW + 'x' + clipH + '+' + cropX + '+' + cropY + ' +profile "*" -write "' + outfile;
-        //gmCommand += '" -resize ' + options.thumbWidth + 'x' + options.thumbHeight + ' +profile "*" "' + thumbFile + '"';
-
         try {
-            console.log("gm1: " + data.SourceFile)
             gm(data.SourceFile)
                 .quality(75)
                 .resize(w, h, '!')
                 .crop(clipW, clipH, cropX, cropY)
                 .noProfile()
                 .write(outfile, function (err) {
-                    console.log("gm2: " + data.SourceFile)
                     if (err) {
                         callback(err);
                     } else {
                         try {
-                            console.log("gm3: " + data.SourceFile)
                             gm(data.SourceFile)
                                 .resize(options.thumbWidth, options.thumbHeight)
                                 .noProfile()
-                                .write(thumbFile, function (err) {
-                                    console.log("gm4: " + data.SourceFile);
-                                    callback(err)
-                                });
+                                .write(thumbFile, callback);
                         }
                         catch (err) {
-                            console.log(err);
                             callback(err);
                         }
                     }
                 })
         }
         catch (err) {
-            console.log(err);
             callback(err);
         }
 
@@ -281,25 +246,18 @@ var scale = function (data, outfile, options, callback) {
         data.DestWidth = data.ImageWidth;
         data.DestHeight = data.ImageHeight;
 
-        //gmCommand = 'gm convert "' + data.SourceFile + '" +profile "*" -write "' + outfile + '" -resize ' + options.thumbWidth + 'x' + options.thumbHeight + ' +profile "*" "' + thumbFile + '"';
         try {
-            console.log("gm5: " + data.SourceFile)
             gm(data.SourceFile)
                 .noProfile()
                 .write(outfile, function (err) {
-                    console.log("gm6: " + data.SourceFile)
                     if (err) {
                         callback(err);
                     } else {
                         try {
-                            console.log("gm7: " + data.SourceFile)
                             gm(data.SourceFile)
                                 .resize(options.thumbWidth, options.thumbHeight)
                                 .noProfile()
-                                .write(thumbFile, function (err) {
-                                    console.log("gm8: " + data.SourceFile)
-                                    callback(err)
-                                });
+                                .write(thumbFile, callback);
                         }
                         catch (err) {
                             console.log(err);
@@ -309,7 +267,6 @@ var scale = function (data, outfile, options, callback) {
                 })
         }
         catch (err) {
-            console.log(err);
             callback(err);
         }
     }
@@ -334,62 +291,38 @@ var ensureDirExists = function (dir, mode, callback) {
 
                 callback(null);
             });
-
         });
     });
 }
 
-var ProcessFiles = function (options, callback) {
+var ProcessFiles = async function (options, callback) {
 
-    var file;
-    do {
-        file = filesToProcess.shift();
-        if (file) {
-            
-            try {
-                var tgtFile = file.replace(options.srcPath, options.tgtPath);
-                console.log("Start processing: " + file)
-                sync(function () {
-                    try {
-                        var res = generateThumbs2.sync(null, file, tgtFile, options);
-                        console.log(res)
-                        if (res)
-                            callback(res.err, file, res.result);
-                        //return null;
-                    }
-                    catch (err) {
-                        console.log("generateThumbs2 exception: " + err)
-                    }
-                    //return null;
-                });
-                console.log("Finished processing: " + file)
-                /*
-                generateThumbs2(file, tgtFile, options, function (err, result) {
-                    try {
-                        callback(err, file, result);
-                    }
-                    catch (error) {
-                        console.err(error);
-                    }
-                    ProcessFiles(options, callback);  // process next file
-                });
-                */
-            } catch (error) {
-                console.log("Error processing: " + file)
-                console.log(error);
-              //  setTimeout(ProcessFiles, 1000, options, callback);
-            }
+    var file = filesToProcess.shift();
+    while (file) {
+
+        var tgtFile = file.replace(options.srcPath, options.tgtPath);
+
+        try {
+            var res = await GenerateThumbsAsync(file, tgtFile, options);
+            callback(null, file, res);
         }
-        /*else {
-            // no files to process - try again later
-            setTimeout(ProcessFiles, 10000, options, callback);
-        }*/
-    } while (file);
+        catch (err) {
+            callback(err);
+        }
 
-    console.log("Finished processing queue, sleeping for 10s")
+        file = filesToProcess.shift();
+    }
+
     // no files to process - try again later
+    console.log("Finished processing files, sleep 10s")
     setTimeout(ProcessFiles, 10000, options, callback);
 }
+
+EnsureDirExistsAsync = util.promisify(ensureDirExists);
+GenerateThumbsAsync = util.promisify(generateThumbs2);
+ReadFileInfoAsync = util.promisify(ReadFileInfo);
+ScaleAsync = util.promisify(scale);
+
 
 process.on('message', function (data) {
     if (data.Action == "Start") {

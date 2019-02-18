@@ -6,7 +6,7 @@ var fs = require('fs')
     , path = require('path')
     , exec = require('child_process').exec
     , sync = require('sync')
-    //, db = require('./database');
+//, db = require('./database');
 
 /*db.initialize(function (err) {
     if (err)
@@ -28,8 +28,6 @@ Array.prototype.unique = function () {
 
 var filesToProcess = [];
 
-
-
 exports.Enumerate = function (dir, callback) {
     var files = [];
     walk(dir, null, function (err) {
@@ -37,8 +35,8 @@ exports.Enumerate = function (dir, callback) {
             console.log("Enumerate err: " + err);
         callback(err, files);
     }, function (file, notUsed, callback2) {
-
-        files.push(file);
+        if (isImageFile(file))
+            files.push(file);
         callback2();
     });
 }
