@@ -374,7 +374,7 @@ var ProcessFiles = function (options, callback) {
                 */
             } catch (error) {
                 console.log(error);
-                setTimeout(ProcessFiles, 1000, options, callback);
+              //  setTimeout(ProcessFiles, 1000, options, callback);
             }
         }
         /*else {
