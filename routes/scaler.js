@@ -343,10 +343,10 @@ var ProcessFiles = function (options, callback) {
     do {
         file = filesToProcess.shift();
         if (file) {
-            console.log("ProcessFiles: " + file)
+            
             try {
                 var tgtFile = file.replace(options.srcPath, options.tgtPath);
-
+                console.log("ProcessFiles1: " + file)
                 sync(function () {
                     try {
                         var res = generateThumbs2.sync(null, file, tgtFile, options);
@@ -362,7 +362,7 @@ var ProcessFiles = function (options, callback) {
                 }, function (x, y) { 
                     console.log(x + " : " + y)
                 });
-
+                console.log("ProcessFiles2: " + file)
                 /*
                 generateThumbs2(file, tgtFile, options, function (err, result) {
                     try {
