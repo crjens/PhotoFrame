@@ -47,8 +47,9 @@ var generateThumbs2 = function (file, tgtFile, options, callback) {
                 var thumbFile = tgtFile.replace(options.tgtPath, options.thumbPath);
                 var ticket2 = ensureDirExists.future(null, path.dirname(thumbFile), 0777 & (~process.umask()));
 
-                //console.log(process.pid + " found2: " + file);   
-                var sStat = fs.stat.future(null, file);
+                console.log(process.pid + " found2: " + file);   
+                //var sStat = fs.stat.future(null, file);
+                var sStat = fs.statSync(file);
                 var tStat = null;
 
                 console.log(process.pid + " found3: " + file + " " + tgtFile);   
