@@ -137,7 +137,7 @@ var Enum = function (path, action, callback) {
     });
 };
 
-Enum(options.srcPath, "Scale", function(count) { files = count});
+Enum(options.srcPath, "Scale", function(count) { total = count});
 Enum(options.tgtPath, "Verify", function(count) {});
 
 
