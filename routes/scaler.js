@@ -318,7 +318,7 @@ var ProcessFiles = async function (options, callback) {
     while (file) {
         
         try {
-            var res = await VerifyAsync(file, tgtFile, options);
+            var res = await VerifyAsync(file, options);
             callback(null, file, res);
         }
         catch (err) {
