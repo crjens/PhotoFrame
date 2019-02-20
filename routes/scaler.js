@@ -18,7 +18,8 @@ Array.prototype.unique = function () {
     });
 }
 
-var filesToProcess = [];
+var filesToScale = [];
+var filesToVerify = [];
 
 var isImageFile = function (path) {
     var lPath = path.toLowerCase();
@@ -297,7 +298,7 @@ var ensureDirExists = function (dir, mode, callback) {
 
 var ProcessFiles = async function (options, callback) {
 
-    var file = filesToProcess.shift();
+    var file = filesToScale.shift();
     while (file) {
 
         var tgtFile = file.replace(options.srcPath, options.tgtPath);
@@ -310,7 +311,21 @@ var ProcessFiles = async function (options, callback) {
             callback(err);
         }
 
-        file = filesToProcess.shift();
+        file = filesToScale.shift();
+    }
+
+    file = filesToVerify.shift();
+    while (file) {
+        
+        try {
+            var res = await VerifyAsync(file, tgtFile, options);
+            callback(null, file, res);
+        }
+        catch (err) {
+            callback(err);
+        }
+
+        file = filesToVerify.shift();
     }
 
     // no files to process - try again later
@@ -318,10 +333,80 @@ var ProcessFiles = async function (options, callback) {
     setTimeout(ProcessFiles, 10000, options, callback);
 }
 
+var shouldIgnore = function(options, path) {
+    for (var i=0;i<options.ignorePaths.length; i++) {
+        if (path.indexOf('/' + options.ignorePaths[i] + '/') != -1) {
+            return true;
+        }
+    }
+    return false;
+}
+
+
+var cleanThumbs = function (tgtFile, options, callback) {
+    var existsFunction = fs.exists || path.exists;
+
+    db.getSourcePathFromTargetPath(tgtFile, function (err, srcPath) {
+        if (err) {
+            callback(err);
+        } else if (srcPath == null) {
+            // no entry for this target file in the database so delete it
+            console.log("deleting (not in db): " + tgtFile);
+            fs.unlink(tgtFile, callback);
+
+            // also delete thumbnail
+            var thumbPath = tgtFile.replace(options.tgtPath, options.thumbPath);
+            fs.unlink(thumbPath, function (err) {
+                if (err)
+                    console.log("failed to delete thumbnail: " + thumbPath + " err: " + err);
+                else
+                    console.log("deleted (not in db): " + thumbPath);
+            });
+        } else {
+            // Make sure source exists, if not clean up db and delete target
+            existsFunction(srcPath, function (exists) {
+                if (exists && !shouldIgnore(options, srcPath)) {
+                    // source file exists so nothing to do
+                    callback();
+                } else {
+                    // Cannot access source file or it should be ignored
+                    // we don't want to delete everything when the network is not assessible
+                    // so we'll only delete if we can access the src directory
+                    existsFunction(options.srcPath, function (srcPathExists) {
+                        if (srcPathExists) {
+
+                            // source file doesn't exist clean db and delete tgt and thumb
+                            db.deleteFileInfo(tgtFile, function (err) {
+
+                                console.log("deleting (src doesn't exist): " + tgtFile);
+                                fs.unlink(tgtFile, callback);
+
+                                // also delete thumbnails
+                                var thumbPath = tgtFile.replace(options.tgtPath, options.thumbPath);
+                                fs.unlink(thumbPath, function (err) {
+                                    if (err)
+                                        console.log("failed to delete thumbnail: " + thumbPath + " err: " + err);
+                                    else
+                                        console.log("deleted (src doesn't exist): " + thumbPath);
+                                });
+                            })
+                        } else {
+                            console.log('Not deleting because network may be down: ' + tgtFile);
+                            //throw new Error('SrcPath is not accessible');
+                            callback();
+                        }
+                    });
+                }
+            });
+        }
+    });
+}
+
 EnsureDirExistsAsync = util.promisify(ensureDirExists);
 GenerateThumbsAsync = util.promisify(generateThumbs2);
 ReadFileInfoAsync = util.promisify(ReadFileInfo);
 ScaleAsync = util.promisify(scale);
+VerifyAsync = util.promisify(cleanThumbs);
 
 
 process.on('message', function (data) {
@@ -331,7 +416,10 @@ process.on('message', function (data) {
             process.send({ Error: err, File: file, Pid: process.pid, Data: data });
         });
     }
-    else if (data.Action == "Push") {
-        filesToProcess.push(data.File);
+    else if (data.Action == "Scale") {
+        filesToScale.push(data.File);
+    }
+    else if (data.Action == "Verify") {
+        filesToVerify.push(data.File);
     }
 });

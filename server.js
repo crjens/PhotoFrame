@@ -117,7 +117,7 @@ for (i = 0; i < scalersToUse; i++) {
     StartScalerProcess();
 }
 
-var Enum = function (path) {
+var Enum = function (path, action) {
     scale.Enumerate(path, function (err, files) {
         if (err) {
             console.log(err);
@@ -125,17 +125,18 @@ var Enum = function (path) {
         else {
             files.forEach(function (file) {
                 var index = (total++) % scalers.length;
-                scalers[index].send({ Action: "Push", File: file });
+                scalers[index].send({ Action: action, File: file });
             });
 
             console.log("found: " + files.length + " files in " + path)
         }
 
-        setTimeout(Enum, options.delay, path);
+        setTimeout(Enum, options.delay, path, action);
     });
 };
 
-Enum(options.srcPath);
+Enum(options.srcPath, "Scale");
+Enum(options.srcPath, "Verify");
 
 
 var username = 'jensen', password = 'photos';

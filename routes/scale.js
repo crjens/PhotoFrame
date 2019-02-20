@@ -5,7 +5,7 @@
 var fs = require('fs')
     , path = require('path')
     , exec = require('child_process').exec;
-  //  , sync = require('sync')
+//  , sync = require('sync')
 //, db = require('./database');
 
 /*db.initialize(function (err) {
@@ -225,3 +225,5 @@ function ensureDirExists(dir, mode, callback) {
         });
     });
 }
+
+
