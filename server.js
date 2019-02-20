@@ -117,26 +117,28 @@ for (i = 0; i < scalersToUse; i++) {
     StartScalerProcess();
 }
 
-var Enum = function (path, action) {
+var Enum = function (path, action, callback) {
+    var count = 0;
     scale.Enumerate(path, function (err, files) {
         if (err) {
             console.log(err);
         }
         else {
             files.forEach(function (file) {
-                var index = (total++) % scalers.length;
+                var index = (count++) % scalers.length;
                 scalers[index].send({ Action: action, File: file });
             });
 
             console.log("found: " + files.length + " files in " + path)
         }
+        callback(count)
 
         setTimeout(Enum, options.delay, path, action);
     });
 };
 
-Enum(options.srcPath, "Scale");
-Enum(options.tgtPath, "Verify");
+Enum(options.srcPath, "Scale", function(count) { files = count});
+Enum(options.tgtPath, "Verify", function(count) {});
 
 
 var username = 'jensen', password = 'photos';
