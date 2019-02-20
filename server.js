@@ -136,7 +136,7 @@ var Enum = function (path, action) {
 };
 
 Enum(options.srcPath, "Scale");
-Enum(options.srcPath, "Verify");
+Enum(options.tgtPath, "Verify");
 
 
 var username = 'jensen', password = 'photos';
