@@ -14,4 +14,4 @@ Install Instructions
 	2. update /etc/fstab and the following line
 		1. //192.168.0.146/photo	/mnt/nas	cifs	username=<user>,password=<password>,vers=1.0	0	0	f
 4. Install PhotoFrame software
-	1. wget -O - https://raw.githubusercontent.com/crjens/PhotFrame/install.sh | bash
+	1. wget -O - https://raw.githubusercontent.com/crjens/PhotoFrame/install.sh | bash
